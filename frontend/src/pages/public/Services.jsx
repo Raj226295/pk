@@ -257,7 +257,7 @@ function Services() {
               key={group.id} onClick={() => selectCategory(group.id)} role="tab" type="button">
               <i>{group.categoryIcon ? <img alt="" src={group.categoryIcon} /> : <Icon name={group.icon} />}</i>
               <span>{group.title}</span>
-              <small>{group.cardSubtitle || group.summary}</small>
+              <small aria-hidden="true" />
               <b aria-hidden="true">→</b>
             </button>
           ))}
