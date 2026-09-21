@@ -13,14 +13,6 @@ import { resolveUploadUrl } from '../../lib/uploads.js'
 import { Icon } from '../public/Home.jsx'
 import { serviceGroups } from '../public/Services.jsx'
 import { directServices, influencers, webPackages } from '../public/MarketingWebApps.jsx'
-import panCardIcon from '../../assets/document-icons/pan-card.png'
-import aadhaarCardIcon from '../../assets/document-icons/aadhaar-card.png'
-import photoIcon from '../../assets/document-icons/photo.png'
-import businessIcon from '../../assets/document-icons/business.png'
-import addressProofIcon from '../../assets/document-icons/address-proof.png'
-import mobileIcon from '../../assets/document-icons/mobile.png'
-import emailIcon from '../../assets/document-icons/email.png'
-import notesIcon from '../../assets/document-icons/notes.png'
 import gstServiceIllustration from '../../assets/upload-service-icons/gst.png'
 import incomeTaxIllustration from '../../assets/upload-service-icons/income-tax.png'
 import accountingIllustration from '../../assets/upload-service-icons/accounting.png'
@@ -87,6 +79,13 @@ const serviceCategories = [
 const serviceDescriptions = {
   'GST Registration': 'New GST registration for your business',
   'GST Return Filing': 'Monthly, quarterly & annual returns',
+  'GSTR-1 Filing': 'Outward supplies return filing.',
+  'GSTR-3B Filing': 'Monthly summary return filing.',
+  'Notice Handling': 'Reply to GST notices and demand orders.',
+  'LUT Filing': 'Export without GST with LUT.',
+  'Refund Services': 'GST refund application and tracking.',
+  'GST Audit & Compliance': 'Audit support and regulatory compliance.',
+  'GST Consultation': 'Expert advice and guidance.',
   'GST Notice Handling': 'Reply to departmental notices',
   'LUT & Refunds': 'LUT filing and GST refund support',
   'E-Way Bill & E-Invoicing': 'Generate and manage e-way bills',
@@ -568,13 +567,13 @@ function UploadDocuments() {
   const getRequirementIcon = (label = '') => {
     const normalizedLabel = label.toLowerCase()
 
-    if (normalizedLabel.includes('aadhaar')) return aadhaarCardIcon
-    if (normalizedLabel.includes('passport') || normalizedLabel.includes('photo')) return photoIcon
-    if (normalizedLabel.includes('business')) return businessIcon
-    if (normalizedLabel.includes('address') || normalizedLabel.includes('electricity') || normalizedLabel.includes('rent')) return addressProofIcon
-    if (normalizedLabel.includes('mobile') || normalizedLabel.includes('phone')) return mobileIcon
-    if (normalizedLabel.includes('email')) return emailIcon
-    return panCardIcon
+    if (normalizedLabel.includes('aadhaar')) return 'users'
+    if (normalizedLabel.includes('passport') || normalizedLabel.includes('photo')) return 'camera'
+    if (normalizedLabel.includes('business')) return 'building'
+    if (normalizedLabel.includes('address') || normalizedLabel.includes('electricity') || normalizedLabel.includes('rent')) return 'fileCheck'
+    if (normalizedLabel.includes('mobile') || normalizedLabel.includes('phone')) return 'phoneCall'
+    if (normalizedLabel.includes('email')) return 'mail'
+    return 'tax'
   }
 
   const getRequirementDescription = (label = '') => {
@@ -822,10 +821,10 @@ function UploadDocuments() {
                 const isSelected = selectedSubservice === serviceName
                 const activeTone = serviceCategories.find((category) => category.name === activeCategory)?.tone || 'blue'
                 return (
-                  <button aria-pressed={isSelected} className={`service-type-option ${activeTone}${isSelected ? ' selected' : ''}`} key={serviceName} onClick={() => setSelectedSubservice(serviceName)} type="button">
+                  <button aria-label={`${isSelected ? 'Selected: ' : 'Select '}${serviceName}`} aria-pressed={isSelected} className={`service-type-option ${activeTone}${isSelected ? ' selected' : ''}`} key={serviceName} onClick={() => setSelectedSubservice(serviceName)} type="button">
                     <i><Icon name={serviceIcons[serviceName] || serviceCategories.find((category) => category.name === activeCategory)?.icon || 'fileCheck'} /></i>
                     <span><strong>{serviceName}</strong><small>{serviceDescriptions[serviceName] || `Get expert help with ${serviceName}.`}</small></span>
-                    {isSelected ? <b>✓</b> : <b>›</b>}
+                    <b aria-hidden="true"><Icon name={isSelected ? 'check' : 'arrowRight'} /></b>
                   </button>
                 )
               })}
@@ -870,7 +869,7 @@ function UploadDocuments() {
           </label>
 
           <label className="upload-notes-field">
-            <span><img alt="" aria-hidden="true" src={notesIcon} /> Notes <em>(Optional)</em></span>
+            <span><Icon name="documentStack" /> Notes <em>(Optional)</em></span>
             <textarea
               name="notes"
               onChange={handleChange}
@@ -888,7 +887,7 @@ function UploadDocuments() {
                 key={`${form.documentType}-${item.requiredDocument}`}
               >
                 <span className="document-type-icon" aria-hidden="true">
-                  <img alt="" src={getRequirementIcon(item.requiredDocument)} />
+                  <Icon name={getRequirementIcon(item.requiredDocument)} />
                 </span>
                 <div className="document-checklist-head">
                   <label className="document-checklist-checkbox">

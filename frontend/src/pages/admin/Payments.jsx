@@ -549,14 +549,29 @@ function Payments() {
   return (
     <div className="page-stack admin-payment-center-page">
       <nav aria-label="Breadcrumb" className="admin-overview-breadcrumb admin-payment-breadcrumb"><AdminIcon name="overview" size={17}/><span>Admin Workspace</span><b>›</b><strong>Payments</strong></nav>
-      <section className="admin-payment-hero"><div><span className="admin-surface-eyebrow">Admin Workspace</span><h1>Payment Control Center</h1><p>Track, verify, and manage all client payments in one place. Review invoices, confirm payments, and handle disputes with ease.</p></div><div aria-hidden="true" className="admin-payment-art"><span className="admin-payment-card-art"><i/><i/><i/></span><span className="admin-payment-rupee">₹</span><div><strong>Secure &amp; Simple</strong><span>Manage payments<br/>with complete control<br/>and transparency.</span></div></div></section>
+      <section className="admin-payment-hero">
+        <div>
+          <span className="admin-surface-eyebrow">Admin Workspace</span>
+          <h1>Payments</h1>
+          <p>Review client invoices, confirm payment proofs, and manage payment status from one clean workspace.</p>
+        </div>
+        <span aria-hidden="true" className="admin-payment-hero-icon"><AdminIcon name="payment" size={34} strokeWidth={1.8} /></span>
+      </section>
 
       {status.message ? <p className={`form-message ${status.type}`}>{status.message}</p> : null}
 
       <section className="admin-payment-metric-grid">
         {[
-          ['document','blue',summary.total,'Total invoices','View all invoices'],['payment','teal',formatCurrency(summary.totalEarnings),'Total paid','View payment history'],['clock','orange',formatCurrency(summary.pendingAmount),'Pending amount','Review pending'],['hourglass','purple',summary.pending,'Review queue','Needs attention'],['check','pink',summary.verified,'Verified','Verified payments'],['close','blue',summary.rejected,'Rejected','View rejected'],['bank','teal',summary.manual,'Manual / UPI','Check manual payments'],['cart','purple',summary.online,'Online checkout','Online transactions'],
-        ].map(([icon,tone,value,label,copy])=><article className={`admin-payment-metric ${tone}`} key={label}><i><AdminIcon name={icon} size={25} strokeWidth={2}/></i><div><strong>{value}</strong><span>{label}</span></div><p>{copy}</p><b>→</b></article>)}
+          ['document', 'blue', summary.total, 'Total invoices'],
+          ['clock', 'gold', summary.pending, 'Under review'],
+          ['check', 'green', summary.verified, 'Verified / paid'],
+          ['payment', 'violet', formatCurrency(summary.pendingAmount), 'Pending amount'],
+        ].map(([icon, tone, value, label]) => (
+          <article className={`admin-payment-metric ${tone}`} key={label}>
+            <i><AdminIcon name={icon} size={27} strokeWidth={1.9} /></i>
+            <div><strong>{value}</strong><span>{label}</span></div>
+          </article>
+        ))}
       </section>
 
       <section className="panel admin-payment-filter-panel">

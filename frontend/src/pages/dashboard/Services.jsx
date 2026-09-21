@@ -7,6 +7,7 @@ import { formatCurrency, formatDate } from '../../lib/formatters.js'
 import { getServicePaymentEligibility } from '../../lib/paymentEligibility.js'
 import { resolveUploadUrl } from '../../lib/uploads.js'
 import { Icon } from '../public/Home.jsx'
+import ServiceCatalogCard from '../../components/common/ServiceCatalogCard.jsx'
 import { serviceGroups } from '../public/Services.jsx'
 import { directServices, influencers, webPackages } from '../public/MarketingWebApps.jsx'
 
@@ -364,39 +365,13 @@ function Services() {
         {filteredServices.length ? (
           <div className="dashboard-services-grid">
             {filteredServices.map((service) => (
-              <button
-                className={`service-selection-card service-tone-${service.tone || 'blue'}${service.isTaxGroup ? ' tax-group-card' : ''}`}
+              <ServiceCatalogCard
+                actionLabel={service.isTaxGroup ? 'View all services' : 'Upload documents'}
+                className={service.isTaxGroup ? 'tax-group-card' : ''}
                 key={service._id}
                 onClick={() => service.isTaxGroup ? setActiveTaxGroup(service.groupId) : handleOpenUploadDocuments(service)}
-                type="button"
-              >
-                <div className="service-card-compact-head">
-                  <span className="service-card-icon-badge"><Icon name={service.icon || 'fileCheck'} /></span>
-                  <span className="service-card-head-arrow"><Icon name="arrowRight" /></span>
-                </div>
-                <div className="service-card-body">
-                  <div className="service-card-topline">
-                    <strong>{service.name}</strong>
-                  </div>
-                  <span className="status-badge neutral service-card-price">{service.priceLabel || formatCurrency(service.price || 0)}</span>
-                  <p>{service.description || service.guide?.summary || 'Professional support for this service.'}</p>
-                  {service.isTaxGroup ? (
-                    <span className="tax-group-feature-list">
-                      {service.featureItems.map((item) => <small key={item}><b>✓</b>{item}</small>)}
-                    </span>
-                  ) : null}
-                  {service.tags?.length ? (
-                    <span className="service-card-tags">
-                      {service.tags.slice(0, 4).map((tag) => <small key={tag}>{tag}</small>)}
-                      {service.tags.length > 4 ? <small>+{service.tags.length - 4} more</small> : null}
-                    </span>
-                  ) : null}
-                  <span className="service-card-link">
-                    <span>{service.isTaxGroup ? 'View all services' : 'Upload documents'}</span>
-                    <Icon name="arrowRight" />
-                  </span>
-                </div>
-              </button>
+                service={{ ...service, description: service.description || service.guide?.summary, tags: service.isTaxGroup ? service.featureItems : service.tags }}
+              />
             ))}
           </div>
         ) : (

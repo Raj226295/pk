@@ -4,6 +4,7 @@ import Loader from '../../components/common/Loader.jsx'
 import PageHeader from '../../components/common/PageHeader.jsx'
 import StatusBadge from '../../components/common/StatusBadge.jsx'
 import UserAvatar from '../../components/common/UserAvatar.jsx'
+import ServiceCatalogCard from '../../components/common/ServiceCatalogCard.jsx'
 import api, { extractApiError } from '../../lib/api.js'
 import { downloadFileFromApi } from '../../lib/downloads.js'
 import { formatCurrency, formatDateTime } from '../../lib/formatters.js'
@@ -100,6 +101,7 @@ function Services() {
   const [catalogImagePreviewUrl, setCatalogImagePreviewUrl] = useState('')
   const [catalogImageSettings, setCatalogImageSettings] = useState(defaultServiceImageSettings)
   const [catalogImageInputKey, setCatalogImageInputKey] = useState(0)
+  const [openCatalogMenuId, setOpenCatalogMenuId] = useState('')
   const [savingKey, setSavingKey] = useState('')
   const [loading, setLoading] = useState(true)
   const [status, setStatus] = useState({ type: '', message: '' })
@@ -407,24 +409,49 @@ function Services() {
     }
   }
 
-  const deleteCatalogItem = async () => {
-    if (!selectedCatalogItem) {
+  const deleteCatalogItem = async (itemToDelete = selectedCatalogItem) => {
+    if (!itemToDelete) {
       return
     }
 
-    if (!window.confirm(`Delete ${selectedCatalogItem.name}?`)) {
+    if (!window.confirm(`Delete ${itemToDelete.name}?`)) {
       return
     }
 
     setSavingKey('catalog-delete')
 
     try {
-      await api.delete(`/api/admin/service-catalog/${selectedCatalogItem._id}`)
+      await api.delete(`/api/admin/service-catalog/${itemToDelete._id}`)
       setIsCreatingCatalogItem(false)
       setSelectedCatalogId('')
       setCatalogForm(initialCatalogForm)
       await loadData()
       setStatus({ type: 'success', message: 'Service deleted successfully.' })
+    } catch (error) {
+      setStatus({ type: 'error', message: extractApiError(error) })
+    } finally {
+      setSavingKey('')
+    }
+  }
+
+  const toggleCatalogItemVisibility = async (item) => {
+    setSavingKey(`catalog-visibility-${item._id}`)
+    const payload = new FormData()
+    payload.append('name', item.name || '')
+    payload.append('description', item.description || '')
+    payload.append('price', String(Number(item.price || 0)))
+    payload.append('isActive', String(!item.isActive))
+    payload.append('imageZoom', String(item.imageZoom ?? 1))
+    payload.append('imageOffsetX', String(item.imageOffsetX ?? 0))
+    payload.append('imageOffsetY', String(item.imageOffsetY ?? 0))
+
+    try {
+      await api.post(`/api/admin/service-catalog/${item._id}?_method=PATCH`, payload, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      setOpenCatalogMenuId('')
+      await loadData()
+      setStatus({ type: 'success', message: `${item.name} is now ${item.isActive ? 'hidden' : 'live'}.` })
     } catch (error) {
       setStatus({ type: 'error', message: extractApiError(error) })
     } finally {
@@ -538,37 +565,33 @@ function Services() {
         {catalogCards.length ? (
           <div className="admin-service-catalog-list">
             {catalogCards.map((item) => (
-              <button
+              <ServiceCatalogCard
+                actionLabel="Edit service"
                 className={`admin-service-catalog-card ${selectedCatalogId === item._id && !isCreatingCatalogItem ? 'active' : ''}`}
                 key={item._id}
                 onClick={() => handleSelectCatalogItem(item)}
-                type="button"
-              >
-                {item.image ? (
-                  <div className="admin-service-catalog-thumb">
-                    <img
-                      alt={`${item.name} preview`}
-                      src={resolveUploadUrl(item.image)}
-                      style={{
-                        objectPosition: `${50 + Number(item.imageOffsetX || 0)}% ${50 + Number(item.imageOffsetY || 0)}%`,
-                        transform: `scale(${Number(item.imageZoom || 1)})`,
-                      }}
-                    />
+                service={{
+                  ...item,
+                  image: item.image ? resolveUploadUrl(item.image) : '',
+                  imageStyle: item.image ? {
+                    objectPosition: `${50 + Number(item.imageOffsetX || 0)}% ${50 + Number(item.imageOffsetY || 0)}%`,
+                    transform: `scale(${Number(item.imageZoom || 1)})`,
+                  } : undefined,
+                  tags: [`${item.clientCount} clients`, `${item.assignmentCount} assignments`, item.isActive ? 'Live' : 'Hidden'],
+                }}
+                overlay={(
+                  <div className="admin-service-card-menu">
+                    <button aria-expanded={openCatalogMenuId === item._id} aria-label={`Actions for ${item.name}`} className="admin-service-card-menu-trigger" onClick={(event) => { event.stopPropagation(); setOpenCatalogMenuId((current) => current === item._id ? '' : item._id) }} type="button">⋮</button>
+                    {openCatalogMenuId === item._id ? (
+                      <div className="admin-service-card-menu-popover" role="menu">
+                        <button onClick={() => { handleSelectCatalogItem(item); setOpenCatalogMenuId(''); editorSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }} role="menuitem" type="button">Edit</button>
+                        <button disabled={savingKey === `catalog-visibility-${item._id}`} onClick={() => toggleCatalogItemVisibility(item)} role="menuitem" type="button">{item.isActive ? 'Disable' : 'Enable'}</button>
+                        <button className="delete" onClick={() => { setOpenCatalogMenuId(''); deleteCatalogItem(item) }} role="menuitem" type="button">Delete</button>
+                      </div>
+                    ) : null}
                   </div>
-                ) : null}
-                <div className="admin-service-catalog-card-head">
-                  <strong>{item.name}</strong>
-                  <span className={`admin-availability-chip ${item.isActive ? 'active' : 'inactive'}`}>
-                    {item.isActive ? 'Live' : 'Hidden'}
-                  </span>
-                </div>
-                <p>{item.description || 'No service description added yet.'}</p>
-                <div className="admin-service-catalog-card-meta">
-                  <span>{formatCurrency(item.price || 0)}</span>
-                  <span>{item.clientCount} clients</span>
-                  <span>{item.assignmentCount} assignments</span>
-                </div>
-              </button>
+                )}
+              />
             ))}
           </div>
         ) : (

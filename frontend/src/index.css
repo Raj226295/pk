@@ -43,6 +43,243 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Services workspace: a single compact catalogue surface with aligned, non-overlapping cards. */
+.user-dashboard-shell .services-workspace-page {
+  gap:16px;
+  padding-bottom:96px;
+}
+.user-dashboard-shell .services-workspace-page > .services-mobile-search {
+  display:none !important;
+}
+.user-dashboard-shell .services-workspace-page .dashboard-services-section {
+  display:grid;
+  gap:16px;
+  padding:18px;
+  overflow:hidden;
+  border:1px solid #e1eaf3;
+  border-radius:20px;
+  background:#fff;
+  box-shadow:0 10px 28px rgba(6,43,86,.055);
+}
+.user-dashboard-shell .services-workspace-page .services-catalog-head {
+  min-width:0;
+  margin:0;
+  padding:0 0 14px;
+  border-bottom:1px solid #edf2f7;
+}
+.user-dashboard-shell .services-workspace-page .services-head-actions {
+  flex:0 0 auto;
+}
+.user-dashboard-shell .services-workspace-page .services-search-box {
+  width:260px;
+}
+.user-dashboard-shell .services-workspace-page .dashboard-services-grid {
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  align-items:stretch;
+  gap:14px;
+}
+.user-dashboard-shell .services-workspace-page .service-selection-card,
+.user-dashboard-shell .services-workspace-page .tax-group-card {
+  box-sizing:border-box;
+  min-width:0;
+  height:556px;
+  min-height:556px;
+  margin:0;
+  padding:16px 14px 14px;
+  overflow:hidden;
+  border-radius:16px;
+}
+.user-dashboard-shell .services-workspace-page .tax-group-card::before {
+  height:114px;
+}
+.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-compact-head {
+  min-height:66px;
+}
+.user-dashboard-shell .services-workspace-page .service-selection-card .service-card-body {
+  position:relative;
+  min-width:0;
+  min-height:0;
+  padding-top:12px;
+  gap:9px;
+}
+.user-dashboard-shell .services-workspace-page .service-selection-card .service-card-topline,
+.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-topline {
+  min-height:44px;
+  padding-right:92px;
+}
+.user-dashboard-shell .services-workspace-page .service-selection-card .service-card-topline strong,
+.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-topline strong {
+  display:-webkit-box;
+  overflow:hidden;
+  font-size:.96rem;
+  line-height:1.25;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+}
+.user-dashboard-shell .services-workspace-page .service-selection-card .service-card-price,
+.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-price {
+  position:absolute;
+  top:12px;
+  right:0;
+  width:82px;
+  min-height:38px;
+  max-width:82px;
+  box-sizing:border-box;
+  display:grid;
+  place-items:center;
+  padding:5px 6px;
+  white-space:normal;
+  font-size:.64rem;
+  line-height:1.15;
+  text-align:center;
+}
+.user-dashboard-shell .services-workspace-page .service-selection-card .service-card-body > p,
+.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-body > p {
+  min-height:46px;
+  margin:0;
+  font-size:.77rem;
+  line-height:1.4;
+  -webkit-line-clamp:2;
+}
+.user-dashboard-shell .services-workspace-page .tax-group-feature-list {
+  min-height:186px;
+  margin:0;
+  gap:4px;
+}
+.user-dashboard-shell .services-workspace-page .tax-group-feature-list small {
+  grid-template-columns:15px minmax(0,1fr);
+  gap:6px;
+  font-size:.67rem;
+  line-height:1.25;
+}
+.user-dashboard-shell .services-workspace-page .tax-group-feature-list b {
+  width:15px;
+  height:15px;
+}
+.user-dashboard-shell .services-workspace-page .service-card-tags,
+.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-tags {
+  min-height:60px;
+  max-height:60px;
+  margin:0;
+  overflow:hidden;
+  align-content:start;
+}
+.user-dashboard-shell .services-workspace-page .service-card-tags small {
+  font-size:.62rem;
+}
+.user-dashboard-shell .services-workspace-page .service-card-link {
+  min-height:48px;
+  box-sizing:border-box;
+  margin-top:auto;
+  flex:0 0 48px;
+}
+.user-dashboard-shell .services-workspace-page .service-card-link .pk-icon {
+  width:19px;
+  height:19px;
+}
+/* Fixed actions stay above the page edge, never on top of the service catalogue. */
+body:has(.services-workspace-page) .contact-float-stack {
+  right:18px;
+  bottom:18px;
+}
+
+@media (max-width:900px) {
+  .user-dashboard-shell .services-workspace-page .dashboard-services-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (max-width:640px) {
+  .user-dashboard-shell .services-workspace-page { gap:13px; padding-bottom:82px; }
+  .user-dashboard-shell .services-workspace-page .dashboard-services-section { gap:12px; padding:13px; border-radius:17px; }
+  .user-dashboard-shell .services-workspace-page .services-catalog-head { align-items:stretch; padding-bottom:12px; }
+  .user-dashboard-shell .services-workspace-page .services-head-actions,
+  .user-dashboard-shell .services-workspace-page .services-search-box { width:100%; }
+  .user-dashboard-shell .services-workspace-page .dashboard-services-grid { grid-template-columns:1fr; gap:11px; }
+  .user-dashboard-shell .services-workspace-page .service-selection-card,
+  .user-dashboard-shell .services-workspace-page .tax-group-card { height:526px; min-height:526px; padding:15px 13px 13px; }
+  .user-dashboard-shell .services-workspace-page .tax-group-feature-list { min-height:170px; }
+  .user-dashboard-shell .services-workspace-page .service-card-link { display:flex; }
+  body:has(.services-workspace-page) .contact-float-stack { right:12px; bottom:12px; }
+}
+
+/* Admin catalogue uses the same shared ServiceCatalogCard surface as the client catalogue. */
+.admin-service-catalog-list { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; align-items:stretch; }
+.admin-service-catalog-list .service-catalog-card-shell { position:relative; min-width:0; }
+.admin-service-catalog-list .service-selection-card { width:100%; height:100%; min-height:286px; display:flex; flex-direction:column; gap:0; margin:0; padding:13px; overflow:hidden; color:#08245f; text-align:left; border:1px solid #dfe8f1; border-radius:17px; background:#fff; box-shadow:0 7px 18px rgba(6,43,86,.06); transition:transform .2s ease,box-shadow .2s ease; }
+.admin-service-catalog-list .service-selection-card:hover,.admin-service-catalog-list .service-selection-card:focus-visible { transform:translateY(-4px); box-shadow:0 14px 28px rgba(6,43,86,.12); }
+.admin-service-catalog-list .service-card-compact-head { min-height:52px; display:flex; align-items:flex-start; justify-content:space-between; }
+.admin-service-catalog-list .service-card-icon-badge { width:44px; height:44px; display:grid; place-items:center; overflow:hidden; border-radius:12px; background:#e9f3ff; color:#0867ba; }
+.admin-service-catalog-list .service-card-icon-badge .pk-icon { width:25px; height:25px; }
+.admin-service-catalog-list .service-card-icon-badge img { width:100%; height:100%; object-fit:cover; }
+.admin-service-catalog-list .service-card-head-arrow { padding-top:4px; color:#0b4b87; }.admin-service-catalog-list .service-card-head-arrow .pk-icon { width:19px; height:19px; }
+.admin-service-catalog-list .service-card-body { position:relative; display:flex; min-width:0; flex:1; flex-direction:column; gap:7px; padding-top:7px; }
+.admin-service-catalog-list .service-card-topline { min-height:36px; padding-right:80px; }.admin-service-catalog-list .service-card-topline strong { display:-webkit-box; overflow:hidden; font-size:.9rem; line-height:1.2; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
+.admin-service-catalog-list .service-card-price { position:absolute; top:7px; right:0; width:72px; min-height:32px; display:grid; place-items:center; padding:4px; border-radius:12px; color:#b46600; background:#fff5df; border:1px solid #ffe1a0; font-size:.58rem; line-height:1.1; text-align:center; }
+.admin-service-catalog-list .service-card-body > p { display:-webkit-box; height:2.8em; margin:0; overflow:hidden; color:#567199; font-size:.72rem; line-height:1.4; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
+.admin-service-catalog-list .service-card-tags { display:flex; min-height:0; flex-wrap:wrap; gap:5px; margin:0; }.admin-service-catalog-list .service-card-tags small { padding:4px 7px; border-radius:6px; color:#1761a7; background:#eaf4ff; font-size:.58rem; }
+.admin-service-catalog-list .service-card-link { min-height:42px; display:flex; align-items:center; justify-content:space-between; margin-top:auto; padding:0 12px; border-radius:10px; color:#fff; background:linear-gradient(105deg,#075eaa,#087cba); font-size:.76rem; font-weight:700; }.admin-service-catalog-list .service-card-link .pk-icon { width:17px; height:17px; }
+.admin-service-catalog-list .admin-service-card-menu { position:absolute; z-index:3; top:12px; right:12px; }.admin-service-catalog-list .admin-service-card-menu-trigger { width:28px; height:28px; display:grid; place-items:center; padding:0; border:0; border-radius:8px; color:#123b70; background:rgba(255,255,255,.9); font-size:20px; line-height:1; cursor:pointer; }.admin-service-catalog-list .admin-service-card-menu-trigger:hover { background:#edf5ff; }
+.admin-service-catalog-list .admin-service-card-menu-popover { position:absolute; z-index:5; top:33px; right:0; min-width:112px; padding:5px; border:1px solid #dbe6f1; border-radius:10px; background:#fff; box-shadow:0 10px 24px rgba(6,43,86,.15); }.admin-service-catalog-list .admin-service-card-menu-popover button { width:100%; padding:7px 8px; border:0; border-radius:6px; color:#173663; background:transparent; font:inherit; font-size:.75rem; text-align:left; cursor:pointer; }.admin-service-catalog-list .admin-service-card-menu-popover button:hover { background:#eef6ff; }.admin-service-catalog-list .admin-service-card-menu-popover button.delete { color:#bd2637; }
+@media (max-width:1100px) { .admin-service-catalog-list { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:620px) { .admin-service-catalog-list { grid-template-columns:1fr; gap:11px; }.admin-service-catalog-list .service-selection-card { min-height:272px; } }
+
+/* Clean, compact admin payment overview using the dashboard's shared AdminIcon SVGs. */
+.admin-payment-center-page { gap:18px; padding-bottom:28px; }
+.admin-payment-breadcrumb { margin-bottom:-4px; }
+.admin-payment-hero { display:flex; align-items:center; justify-content:space-between; gap:24px; padding:22px 24px; border:1px solid #dfe8f1; border-radius:18px; background:#fff; box-shadow:0 9px 24px rgba(6,43,86,.055); }
+.admin-payment-hero h1 { margin:5px 0 3px; color:#08245f; font-size:1.55rem; line-height:1.1; }.admin-payment-hero p { max-width:680px; margin:0; color:#55729a; font-size:.87rem; }
+.admin-payment-hero-icon { width:58px; height:58px; flex:0 0 auto; display:grid; place-items:center; border-radius:17px; color:#0879c9; background:#eaf5ff; }
+.admin-payment-metric-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; }
+.admin-payment-metric { min-width:0; min-height:104px; display:flex; align-items:center; gap:15px; padding:17px; border:1px solid #dfe8f1; border-radius:16px; background:#fff; box-shadow:0 7px 18px rgba(6,43,86,.045); }
+.admin-payment-metric > i { width:52px; height:52px; flex:0 0 52px; display:grid; place-items:center; border-radius:50%; }.admin-payment-metric > div { min-width:0; display:grid; gap:4px; }.admin-payment-metric strong { color:#08245f; font-size:1.55rem; line-height:1; }.admin-payment-metric span { color:#627799; font-size:.82rem; font-weight:700; }
+.admin-payment-metric.blue > i { color:#0883dc; background:#e5f3ff; }.admin-payment-metric.gold > i { color:#ed9400; background:#fff2d9; }.admin-payment-metric.green > i { color:#08a85d; background:#ddf9e9; }.admin-payment-metric.violet > i { color:#8536d5; background:#f2e5ff; }
+.admin-payment-filter-panel { padding:19px; border-color:#dfe8f1; border-radius:18px; box-shadow:0 7px 18px rgba(6,43,86,.045); }.admin-payment-filter-head { align-items:center; }.admin-payment-filter-head > i { width:40px; height:40px; display:grid; place-items:center; border-radius:12px; color:#0879c9; background:#eaf5ff; }.admin-payment-filter-head h3 { margin:0; color:#08245f; }.admin-payment-filter-head p { margin:3px 0 0; color:#627799; font-size:.82rem; }
+.admin-payment-empty { min-height:240px; display:grid; place-items:center; align-content:center; gap:8px; padding:24px; border:1px solid #dfe8f1; border-radius:18px; background:#fff; text-align:center; }.admin-payment-empty > i { width:66px; height:66px; display:grid; place-items:center; border-radius:50%; color:#0879c9; background:#eaf5ff; }.admin-payment-empty h3 { margin:4px 0 0; color:#08245f; }.admin-payment-empty p { margin:0; color:#627799; }
+.admin-payment-tip { display:none; }
+@media (max-width:1050px) { .admin-payment-metric-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:620px) { .admin-payment-center-page { gap:13px; }.admin-payment-hero { align-items:flex-start; padding:17px; }.admin-payment-hero h1 { font-size:1.35rem; }.admin-payment-hero-icon { width:47px; height:47px; border-radius:14px; }.admin-payment-metric-grid { grid-template-columns:1fr; gap:10px; }.admin-payment-metric { min-height:88px; padding:14px; }.admin-payment-metric > i { width:46px; height:46px; flex-basis:46px; } }
+
+/* Compact contact pills stay floating above the dashboard's mobile navigation. */
+@media (max-width:1024px) {
+  .contact-float-stack {
+    position:fixed;
+    right:12px;
+    bottom:calc(76px + env(safe-area-inset-bottom, 0px) + 12px);
+    z-index:100;
+    display:flex;
+    gap:8px;
+    pointer-events:auto;
+  }
+  .contact-float-stack .call-float,
+  .contact-float-stack .whatsapp-float {
+    width:146px;
+    min-height:44px;
+    grid-template-columns:21px 1px minmax(0,1fr) 34px;
+    gap:7px;
+    padding:4px 4px 4px 11px;
+    border-radius:999px;
+    font-size:.7rem;
+  }
+  .contact-float-stack .call-float .contact-float-icon { width:21px; height:21px; }
+  .contact-float-stack .whatsapp-float .contact-float-icon { width:24px; height:24px; }
+  .contact-float-stack .call-float > i,
+  .contact-float-stack .whatsapp-float > i { height:22px; }
+  .contact-float-stack .call-float > b,
+  .contact-float-stack .whatsapp-float > b { width:34px; height:34px; }
+  .contact-float-stack .call-float > b svg,
+  .contact-float-stack .whatsapp-float > b svg { width:17px; height:17px; }
+}
+@media (max-width:390px) {
+  .contact-float-stack { right:9px; gap:6px; }
+  .contact-float-stack .call-float,
+  .contact-float-stack .whatsapp-float { width:132px; min-height:41px; grid-template-columns:19px 1px minmax(0,1fr) 31px; padding-left:9px; font-size:.65rem; }
+  .contact-float-stack .call-float > b,
+  .contact-float-stack .whatsapp-float > b { width:31px; height:31px; }
+}
+
+@media (min-width:1025px) {
+  /* On the Services workspace, reserve the sidebar's lower empty area for contact actions. */
+  body:has(.services-workspace-page) .contact-float-stack { right:auto; left:16px; bottom:20px; }
+}
+
 
 /* Canonical mobile bottom navigation — keep this as the final override. */
 @media (max-width: 1024px) {
@@ -15120,6 +15357,58 @@ button strong,
 @media (max-width:480px) { .upload-flow-stepper::after { top:32px; } }
 @media (prefers-reduced-motion:reduce) { .upload-flow-stepper::after,.upload-flow-step > span,.upload-flow-step strong,.upload-flow-step strong::after { transition:none; }.upload-flow-step.active > span,.upload-flow-step.complete > span,.upload-flow-step.active > span::after,.upload-flow-content { animation:none; } }
 
+/* Upload flow: use true SVG affordances so arrows and selected states remain crisp at every scale. */
+.user-dashboard-shell .upload-flow-type-card .service-subservice-list > .service-type-option > b {
+  font-size:0;
+}
+.user-dashboard-shell .upload-flow-type-card .service-subservice-list > .service-type-option > b .pk-icon {
+  width:18px;
+  height:18px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.4;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.user-dashboard-shell .upload-flow-type-card .service-subservice-list > .service-type-option.selected > b .pk-icon {
+  width:14px;
+  height:14px;
+  stroke-width:3;
+}
+@media (max-width:640px) {
+  .user-dashboard-shell .upload-flow-type-card .service-subservice-list > .service-type-option > b .pk-icon { width:16px; height:16px; }
+  .user-dashboard-shell .upload-flow-type-card .service-subservice-list > .service-type-option.selected > b .pk-icon { width:13px; height:13px; }
+}
+
+/* Keep the Continue CTA's inline SVG at a deliberate button-icon size (SVG defaults otherwise expand to 300 × 150px). */
+.user-dashboard-shell .upload-flow-type-card .service-selection-continue {
+  min-height:58px;
+  padding:0 24px;
+  gap:12px;
+  letter-spacing:.01em;
+}
+.user-dashboard-shell .upload-flow-type-card .service-selection-continue > .pk-icon {
+  width:21px !important;
+  height:21px !important;
+  min-width:21px;
+  max-width:21px;
+  flex:0 0 21px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.35;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.user-dashboard-shell .upload-flow-type-card .service-selection-continue:not(:disabled):hover > .pk-icon {
+  transform:translateX(3px);
+}
+@media (max-width:640px) {
+  .user-dashboard-shell .upload-flow-type-card .service-selection-continue { min-height:52px; padding:0 18px; }
+  .user-dashboard-shell .upload-flow-type-card .service-selection-continue > .pk-icon { width:19px !important; height:19px !important; min-width:19px; max-width:19px; flex-basis:19px; }
+}
+
 @media (max-width:390px) {
   .site-shell .public-main { padding-top:76px; }
   .site-shell .navbar { min-height:76px; padding-inline:10px; }
@@ -16116,4 +16405,182 @@ button strong,
     line-height:0 !important;
     transform:none;
   }
+}
+
+/* Compact contact pills stay floating above the dashboard's mobile navigation. */
+@media (max-width:1024px) {
+  .contact-float-stack { position:fixed; right:12px; bottom:calc(76px + env(safe-area-inset-bottom, 0px) + 12px) !important; z-index:100; display:flex; gap:8px; pointer-events:auto; }
+  .contact-float-stack .call-float,.contact-float-stack .whatsapp-float { width:146px; min-height:44px; grid-template-columns:21px 1px minmax(0,1fr) 34px; gap:7px; padding:4px 4px 4px 11px; border-radius:999px; font-size:.7rem; }
+  .contact-float-stack .call-float .contact-float-icon { width:21px; height:21px; }
+  .contact-float-stack .whatsapp-float .contact-float-icon { width:24px; height:24px; }
+  .contact-float-stack .call-float > i,.contact-float-stack .whatsapp-float > i { height:22px; }
+  .contact-float-stack .call-float > b,.contact-float-stack .whatsapp-float > b { width:34px; height:34px; }
+  .contact-float-stack .call-float > b svg,.contact-float-stack .whatsapp-float > b svg { width:17px; height:17px; }
+}
+@media (max-width:390px) {
+  .contact-float-stack { right:9px; gap:6px; }
+  .contact-float-stack .call-float,.contact-float-stack .whatsapp-float { width:132px; min-height:41px; grid-template-columns:19px 1px minmax(0,1fr) 31px; padding-left:9px; font-size:.65rem; }
+  .contact-float-stack .call-float > b,.contact-float-stack .whatsapp-float > b { width:31px; height:31px; }
+}
+
+/* Upload checklist: clean full-width document workspace with crisp inline SVG icons. */
+.user-dashboard-shell .upload-documents-page > .guided-upload-panel { display:none !important; }
+.user-dashboard-shell .upload-documents-workspace { display:block; }
+.user-dashboard-shell .upload-documents-workspace > .upload-progress-panel { display:none; }
+.user-dashboard-shell .upload-documents-workspace > .multi-document-form { display:flex; flex-direction:column; gap:0; padding:24px; border:1px solid #dfe9f3; border-radius:18px; background:#fff; box-shadow:0 10px 28px rgba(6,43,86,.055); }
+.user-dashboard-shell .multi-document-form > h3 { order:1; margin:0; color:#082659; font-size:1.25rem; line-height:1.2; }
+.user-dashboard-shell .multi-document-form > h3::after { content:'Please upload the following documents for your selected service.'; display:block !important; margin-top:5px; color:#5a78a3; font-size:.82rem; font-weight:600; }
+.user-dashboard-shell .multi-document-form > .upload-service-select,.user-dashboard-shell .multi-document-form > .upload-related-service { display:none; }
+.user-dashboard-shell .multi-document-form > .document-checklist-grid { order:2; display:grid; gap:11px; margin-top:20px; }
+.user-dashboard-shell .document-checklist-row { min-height:76px; padding:11px; grid-template-columns:66px minmax(0,1fr) 200px; grid-template-rows:auto auto; column-gap:14px; row-gap:3px; align-items:center; border:1px solid #dce8f3; border-radius:12px; background:linear-gradient(110deg,#fff,#fbfdff); box-shadow:none; }
+.user-dashboard-shell .document-checklist-row:hover { border-color:#b9d6f2; background:#fff; }
+.user-dashboard-shell .document-type-icon { width:66px; height:66px; grid-column:1; grid-row:1 / 3; display:grid; place-items:center; border-radius:13px; color:#082d65; background:linear-gradient(145deg,#e6f5ff,#eef6fc); }
+.user-dashboard-shell .document-type-icon .pk-icon { width:31px; height:31px; fill:none; stroke:currentColor; stroke-width:2.05; stroke-linecap:round; stroke-linejoin:round; }
+.user-dashboard-shell .document-checklist-head { grid-column:2; grid-row:1; display:flex; align-items:center; justify-content:flex-start; gap:10px; min-width:0; }
+.user-dashboard-shell .document-checklist-checkbox { min-width:0; font-size:.92rem; font-weight:800; }
+.user-dashboard-shell .document-checklist-checkbox input { display:none; }
+.user-dashboard-shell .document-required-badge { padding:4px 10px; border:0; border-radius:999px; color:#d88400; background:#fff0c7; font-size:.64rem; font-style:normal; font-weight:800; }
+.user-dashboard-shell .document-checklist-status { display:none; }
+.user-dashboard-shell .document-checklist-copy { grid-column:2; grid-row:2; min-width:0; display:flex; gap:8px; }
+.user-dashboard-shell .document-checklist-copy small { overflow:hidden; color:#5c78a0; font-size:.68rem; line-height:1.25; text-overflow:ellipsis; white-space:nowrap; }
+.user-dashboard-shell .document-checklist-copy small:first-child { display:none; }
+.user-dashboard-shell .document-upload-field { grid-column:3; grid-row:1 / 3; min-width:0; align-self:center; padding:0; border:0; background:transparent; }
+.user-dashboard-shell .document-upload-field > span { display:none; }
+.user-dashboard-shell .document-file-picker { min-height:44px; border:1.5px solid #4f90ff; border-radius:10px; color:#075ee3; background:#fff; box-shadow:none; font-size:.78rem; }
+.user-dashboard-shell .document-file-picker:hover { border-color:#075ee3; background:#f6faff; }
+.user-dashboard-shell .document-file-picker .pk-icon { width:19px; height:19px; color:#075ee3; stroke-width:2.35; }
+.user-dashboard-shell .document-upload-field input[type='text'],.user-dashboard-shell .document-upload-field input[type='email'] { min-height:44px; padding:0 13px; border:1px solid #bcd2eb; border-radius:10px; color:#0a2c5a; font-size:.76rem; box-shadow:none; }
+.user-dashboard-shell .multi-document-form > .upload-notes-field { order:3; margin-top:20px; display:grid; gap:8px; }
+.user-dashboard-shell .upload-notes-field > span { display:flex; align-items:center; gap:8px; color:#082859; font-size:.85rem; font-weight:800; }
+.user-dashboard-shell .upload-notes-field > span .pk-icon { width:21px; height:21px; color:#082859; stroke-width:2.1; }
+.user-dashboard-shell .upload-notes-field > span em { color:#526f98; font-style:normal; font-weight:600; }
+.user-dashboard-shell .upload-notes-field textarea { min-height:96px; padding:12px 14px; border:1px solid #bcd2eb; border-radius:10px; color:#0a2c5a; font-size:.78rem; box-shadow:none; resize:vertical; }
+.user-dashboard-shell .multi-document-form > .form-message { order:4; margin-top:12px; }
+.user-dashboard-shell .multi-document-form > .button-primary { order:5; min-height:54px; margin-top:18px; justify-content:center; gap:12px; border-radius:10px; background:linear-gradient(105deg,#062c5d 0%,#0b447a 55%,#f5a000 100%); }
+.user-dashboard-shell .multi-document-form > .button-primary .pk-icon { width:20px; height:20px; stroke-width:2.3; }
+@media (max-width:700px) {
+  .user-dashboard-shell .upload-documents-workspace > .multi-document-form { padding:16px 12px; border-radius:16px; }
+  .user-dashboard-shell .multi-document-form > h3 { font-size:1.08rem; }
+  .user-dashboard-shell .multi-document-form > h3::after { font-size:.71rem; }
+  .user-dashboard-shell .document-checklist-row { min-height:0; padding:10px; grid-template-columns:48px minmax(0,1fr); grid-template-rows:auto auto 44px; column-gap:10px; }
+  .user-dashboard-shell .document-type-icon { width:48px; height:48px; grid-row:1 / 3; border-radius:11px; }
+  .user-dashboard-shell .document-type-icon .pk-icon { width:25px; height:25px; }
+  .user-dashboard-shell .document-checklist-head { gap:7px; }
+  .user-dashboard-shell .document-checklist-checkbox { font-size:.76rem; }
+  .user-dashboard-shell .document-required-badge { padding:3px 8px; font-size:.58rem; }
+  .user-dashboard-shell .document-checklist-copy { gap:0; }
+  .user-dashboard-shell .document-checklist-copy small { font-size:.6rem; }
+  .user-dashboard-shell .document-upload-field { grid-column:1 / -1; grid-row:3; width:100%; }
+  .user-dashboard-shell .document-file-picker { width:100%; min-height:42px; font-size:.72rem; }
+  .user-dashboard-shell .multi-document-form > .upload-notes-field { margin-top:16px; }
+}
+
+/* Final Services catalogue guard: intentionally last so responsive card rules cannot reintroduce collisions. */
+/* Compact service cards: content-led sizing with a consistent desktop rhythm. */
+.user-dashboard-shell .services-workspace-page .dashboard-services-grid { grid-template-columns:repeat(4,minmax(0,1fr)); align-items:stretch; gap:14px; }
+.user-dashboard-shell .services-workspace-page .service-selection-card,
+.user-dashboard-shell .services-workspace-page .tax-group-card {
+  height:auto;
+  min-height:0;
+  padding:13px;
+  border:1px solid #dfe8f1;
+  border-radius:17px;
+  box-shadow:0 7px 18px rgba(6,43,86,.06);
+  transform:none;
+}
+.user-dashboard-shell .services-workspace-page .service-selection-card:hover,
+.user-dashboard-shell .services-workspace-page .tax-group-card:hover {
+  transform:translateY(-4px);
+  box-shadow:0 14px 28px rgba(6,43,86,.12);
+}
+.user-dashboard-shell .services-workspace-page .tax-group-card::before { height:78px; }
+.user-dashboard-shell .services-workspace-page .service-card-compact-head,
+.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-compact-head { min-height:52px; }
+.user-dashboard-shell .services-workspace-page .service-card-compact-head .service-card-icon-badge,
+.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-compact-head .service-card-icon-badge { width:44px; height:44px; border-radius:12px; }
+.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-icon-badge .pk-icon,
+.user-dashboard-shell .services-workspace-page .service-card-icon-badge .pk-icon { width:25px; height:25px; }
+.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-head-arrow { padding-top:4px; }
+.user-dashboard-shell .services-workspace-page .service-card-head-arrow .pk-icon { width:19px; height:19px; }
+.user-dashboard-shell .services-workspace-page .service-selection-card .service-card-body { flex:0 0 auto; padding-top:7px; gap:7px; }
+.user-dashboard-shell .services-workspace-page .service-selection-card .service-card-topline,
+.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-topline { min-height:36px; padding-right:80px; }
+.user-dashboard-shell .services-workspace-page .service-selection-card .service-card-topline strong,
+.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-topline strong { font-size:.9rem; line-height:1.2; }
+.user-dashboard-shell .services-workspace-page .service-selection-card .service-card-price,
+.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-price { top:7px; width:72px; min-height:32px; max-width:72px; padding:4px; border-radius:12px; font-size:.58rem; line-height:1.1; }
+.user-dashboard-shell .services-workspace-page .service-selection-card .service-card-body > p,
+.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-body > p { min-height:0; height:2.8em; font-size:.72rem; line-height:1.4; -webkit-line-clamp:2; }
+.user-dashboard-shell .services-workspace-page .tax-group-feature-list { min-height:0; display:grid; gap:4px; margin:0; }
+.user-dashboard-shell .services-workspace-page .tax-group-feature-list small { font-size:.63rem; line-height:1.22; }
+.user-dashboard-shell .services-workspace-page .tax-group-feature-list small:nth-child(n+4),
+.user-dashboard-shell .services-workspace-page .service-card-tags small:nth-child(n+4) { display:none; }
+.user-dashboard-shell .services-workspace-page .service-card-tags,
+.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-tags { min-height:0; max-height:none; margin:0; gap:5px; }
+.user-dashboard-shell .services-workspace-page .service-card-tags small { padding:4px 7px; font-size:.58rem; }
+.user-dashboard-shell .services-workspace-page .service-card-link { min-height:42px; flex:0 0 42px; margin-top:3px; padding:0 12px; border-radius:10px; font-size:.76rem; }
+.user-dashboard-shell .services-workspace-page .service-card-link .pk-icon { width:17px; height:17px; }
+@media (max-width:900px) { .user-dashboard-shell .services-workspace-page .dashboard-services-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:640px) {
+  .user-dashboard-shell .services-workspace-page .dashboard-services-grid { grid-template-columns:1fr; gap:10px; }
+  .user-dashboard-shell .services-workspace-page .service-selection-card,.user-dashboard-shell .services-workspace-page .tax-group-card { padding:12px; }
+  .user-dashboard-shell .services-workspace-page .tax-group-feature-list { grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; }
+  .user-dashboard-shell .services-workspace-page .tax-group-feature-list small { grid-template-columns:13px minmax(0,1fr); gap:4px; font-size:.57rem; }
+  .user-dashboard-shell .services-workspace-page .tax-group-feature-list b { width:13px; height:13px; font-size:.5rem; }
+}
+
+/* Compact card rules must follow every legacy Services override. */
+.user-dashboard-shell .services-workspace-page .dashboard-services-grid { grid-template-columns:repeat(4,minmax(0,1fr)); align-items:stretch; gap:14px; }
+.user-dashboard-shell .services-workspace-page .service-selection-card,.user-dashboard-shell .services-workspace-page .tax-group-card { height:auto !important; min-height:0 !important; padding:13px !important; border:1px solid #dfe8f1; border-radius:17px; box-shadow:0 7px 18px rgba(6,43,86,.06); transform:none; }
+.user-dashboard-shell .services-workspace-page .service-selection-card:hover,.user-dashboard-shell .services-workspace-page .tax-group-card:hover { transform:translateY(-4px); box-shadow:0 14px 28px rgba(6,43,86,.12); }
+.user-dashboard-shell .services-workspace-page .tax-group-card::before { height:78px !important; }
+.user-dashboard-shell .services-workspace-page .service-card-compact-head,.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-compact-head { min-height:52px !important; }
+.user-dashboard-shell .services-workspace-page .service-card-compact-head .service-card-icon-badge,.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-compact-head .service-card-icon-badge { width:44px; height:44px; border-radius:12px; }
+.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-icon-badge .pk-icon,.user-dashboard-shell .services-workspace-page .service-card-icon-badge .pk-icon { width:25px; height:25px; }
+.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-head-arrow { padding-top:4px; }.user-dashboard-shell .services-workspace-page .service-card-head-arrow .pk-icon { width:19px; height:19px; }
+.user-dashboard-shell .services-workspace-page .service-selection-card .service-card-body { flex:0 0 auto; padding-top:7px !important; gap:7px !important; }
+.user-dashboard-shell .services-workspace-page .service-selection-card .service-card-topline,.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-topline { min-height:36px !important; padding-right:80px !important; }
+.user-dashboard-shell .services-workspace-page .service-selection-card .service-card-topline strong,.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-topline strong { font-size:.9rem; line-height:1.2; }
+.user-dashboard-shell .services-workspace-page .service-selection-card .service-card-price,.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-price { top:7px; width:72px; min-height:32px; max-width:72px; padding:4px; border-radius:12px; font-size:.58rem; line-height:1.1; }
+.user-dashboard-shell .services-workspace-page .service-selection-card .service-card-body > p,.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-body > p { min-height:0; height:2.8em; font-size:.72rem; line-height:1.4; -webkit-line-clamp:2; }
+.user-dashboard-shell .services-workspace-page .tax-group-feature-list { min-height:0 !important; display:grid; gap:4px; margin:0; }.user-dashboard-shell .services-workspace-page .tax-group-feature-list small { font-size:.63rem; line-height:1.22; }
+.user-dashboard-shell .services-workspace-page .tax-group-feature-list small:nth-child(n+4),.user-dashboard-shell .services-workspace-page .service-card-tags small:nth-child(n+4) { display:none; }
+.user-dashboard-shell .services-workspace-page .service-card-tags,.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-tags { min-height:0 !important; max-height:none !important; margin:0; gap:5px; }.user-dashboard-shell .services-workspace-page .service-card-tags small { padding:4px 7px; font-size:.58rem; }
+.user-dashboard-shell .services-workspace-page .service-card-link { min-height:42px !important; flex:0 0 42px; margin-top:3px !important; padding:0 12px; border-radius:10px; font-size:.76rem; }.user-dashboard-shell .services-workspace-page .service-card-link .pk-icon { width:17px; height:17px; }
+@media (max-width:900px) { .user-dashboard-shell .services-workspace-page .dashboard-services-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:640px) { .user-dashboard-shell .services-workspace-page .dashboard-services-grid { grid-template-columns:1fr; gap:10px; }.user-dashboard-shell .services-workspace-page .service-selection-card,.user-dashboard-shell .services-workspace-page .tax-group-card { padding:12px; }.user-dashboard-shell .services-workspace-page .tax-group-feature-list { grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; }.user-dashboard-shell .services-workspace-page .tax-group-feature-list small { grid-template-columns:13px minmax(0,1fr); gap:4px; font-size:.57rem; }.user-dashboard-shell .services-workspace-page .tax-group-feature-list b { width:13px; height:13px; font-size:.5rem; } }
+
+/* Final Services catalogue guard: intentionally last so responsive card rules cannot reintroduce collisions. */
+.user-dashboard-shell .services-workspace-page > .services-mobile-search { display:none !important; }
+.user-dashboard-shell .services-workspace-page .dashboard-services-section { display:grid; gap:16px; padding:18px; overflow:hidden; border:1px solid #e1eaf3; border-radius:20px; background:#fff; box-shadow:0 10px 28px rgba(6,43,86,.055); }
+.user-dashboard-shell .services-workspace-page .services-catalog-head { min-width:0; margin:0; padding:0 0 14px; border-bottom:1px solid #edf2f7; }
+.user-dashboard-shell .services-workspace-page .services-search-box { width:260px; }
+.user-dashboard-shell .services-workspace-page .dashboard-services-grid { grid-template-columns:repeat(4,minmax(0,1fr)); align-items:stretch; gap:14px; }
+.user-dashboard-shell .services-workspace-page .service-selection-card,.user-dashboard-shell .services-workspace-page .tax-group-card { box-sizing:border-box; min-width:0; height:556px; min-height:556px; margin:0; padding:16px 14px 14px; overflow:hidden; border-radius:16px; }
+.user-dashboard-shell .services-workspace-page .tax-group-card::before { height:114px; }
+.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-compact-head { min-height:66px; }
+.user-dashboard-shell .services-workspace-page .service-selection-card .service-card-body { position:relative; min-width:0; min-height:0; padding-top:12px; gap:9px; }
+.user-dashboard-shell .services-workspace-page .service-selection-card .service-card-topline,.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-topline { min-height:44px; padding-right:92px; }
+.user-dashboard-shell .services-workspace-page .service-selection-card .service-card-topline strong,.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-topline strong { display:-webkit-box; overflow:hidden; font-size:.96rem; line-height:1.25; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
+.user-dashboard-shell .services-workspace-page .service-selection-card .service-card-price,.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-price { position:absolute; top:12px; right:0; width:82px; min-height:38px; max-width:82px; box-sizing:border-box; display:grid; place-items:center; padding:5px 6px; white-space:normal; font-size:.64rem; line-height:1.15; text-align:center; }
+.user-dashboard-shell .services-workspace-page .service-selection-card .service-card-body > p,.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-body > p { min-height:46px; margin:0; font-size:.77rem; line-height:1.4; -webkit-line-clamp:2; }
+.user-dashboard-shell .services-workspace-page .tax-group-feature-list { min-height:186px; margin:0; gap:4px; }
+.user-dashboard-shell .services-workspace-page .tax-group-feature-list small { grid-template-columns:15px minmax(0,1fr); gap:6px; font-size:.67rem; line-height:1.25; }
+.user-dashboard-shell .services-workspace-page .tax-group-feature-list b { width:15px; height:15px; }
+.user-dashboard-shell .services-workspace-page .service-card-tags,.user-dashboard-shell .services-workspace-page .tax-group-card .service-card-tags { min-height:60px; max-height:60px; margin:0; overflow:hidden; align-content:start; }
+.user-dashboard-shell .services-workspace-page .service-card-tags small { font-size:.62rem; }
+.user-dashboard-shell .services-workspace-page .service-card-link { min-height:48px; box-sizing:border-box; margin-top:auto; flex:0 0 48px; }
+.user-dashboard-shell .services-workspace-page .service-card-link .pk-icon { width:19px; height:19px; }
+body:has(.services-workspace-page) .contact-float-stack { right:18px; bottom:18px; }
+@media (max-width:900px) { .user-dashboard-shell .services-workspace-page .dashboard-services-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:640px) {
+  .user-dashboard-shell .services-workspace-page { gap:13px; padding-bottom:82px; }
+  .user-dashboard-shell .services-workspace-page .dashboard-services-section { gap:12px; padding:13px; border-radius:17px; }
+  .user-dashboard-shell .services-workspace-page .services-catalog-head { align-items:stretch; padding-bottom:12px; }
+  .user-dashboard-shell .services-workspace-page .services-head-actions,.user-dashboard-shell .services-workspace-page .services-search-box { width:100%; }
+  .user-dashboard-shell .services-workspace-page .dashboard-services-grid { grid-template-columns:1fr; gap:11px; }
+  .user-dashboard-shell .services-workspace-page .service-selection-card,.user-dashboard-shell .services-workspace-page .tax-group-card { height:526px; min-height:526px; padding:15px 13px 13px; }
+  .user-dashboard-shell .services-workspace-page .tax-group-feature-list { min-height:170px; }
+  .user-dashboard-shell .services-workspace-page .service-card-link { display:flex; }
+  body:has(.services-workspace-page) .contact-float-stack { right:12px; bottom:12px; }
 }

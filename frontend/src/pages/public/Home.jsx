@@ -109,7 +109,20 @@ export const Icon = ({ name }) => {
     smile: <><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></>,
   }
   // Keep a meaningful icon visible when a service is added with an unknown icon key.
-  return <svg aria-hidden="true" className="pk-icon" viewBox="0 0 24 24">{paths[name] || paths.fileCheck}</svg>
+  return (
+    <svg
+      aria-hidden="true"
+      className="pk-icon"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.9"
+      viewBox="0 0 24 24"
+    >
+      {paths[name] || paths.fileCheck}
+    </svg>
+  )
 }
 
 function Home() {
