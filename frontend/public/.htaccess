@@ -1,0 +1,21 @@
+RewriteEngine On
+
+# Serve locally stored uploads from the backend uploads folder.
+RewriteCond %{DOCUMENT_ROOT}/backend/uploads/$1 -f
+RewriteRule ^uploads/(.*)$ backend/uploads/$1 [L]
+
+# Upload URLs should not fall through to the React app.
+RewriteRule ^uploads/ - [R=404,L]
+
+# Send API requests to the PHP backend.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^api/(.*)$ backend/public/index.php [QSA,L]
+
+# Let existing frontend assets load normally.
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# React Router fallback.
+RewriteRule ^ index.html [QSA,L]

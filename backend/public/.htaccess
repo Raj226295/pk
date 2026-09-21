@@ -1,0 +1,10 @@
+RewriteEngine On
+
+# Route /api/* requests to the backend router
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^api/(.*)$ backend/public/index.php [QSA,L]
+
+# Route everything else to the frontend
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ index.html [QSA,L]
