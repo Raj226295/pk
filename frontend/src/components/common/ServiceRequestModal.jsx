@@ -97,18 +97,17 @@ function ServiceRequestModal() {
   return <div className="service-request-backdrop" onMouseDown={(event) => event.target === event.currentTarget && closeServiceRequest()} role="presentation">
     <section aria-labelledby="service-request-title" aria-modal="true" className="service-request-modal" role="dialog">
       <button aria-label="Close service request" className="service-request-close" onClick={closeServiceRequest} type="button">×</button>
-      <div className={`service-request-steps service-request-step-${step}`} aria-label={`Request progress, step ${step} of 3`}><b>1</b><i/><span>2</span><i/><span>3</span></div>
       {step === 1 ? <>
         <header>
           <small>Service Request · {selectedService.title}</small>
-          <h2 id="service-request-title">Tell us where to reach you</h2>
+          <h2 id="service-request-title">Tell us where to <em>reach you</em></h2>
           <p>Share your contact details and our service expert will guide you through the next steps.</p>
         </header>
         <form onSubmit={submitRequest}>
         <div className="service-request-fields">
-          <label className="service-request-field service-request-field-name"><span><i><Icon name="profile"/></i>Full name <b>*</b></span><input autoFocus name="name" onChange={updateField} placeholder="Enter your full name" required type="text" value={form.name}/><small>Let us know how to address you.</small></label>
-          <label className="service-request-field service-request-field-phone"><span><i><Icon name="phone"/></i>Phone number <b>*</b></span><div className="service-request-phone-input"><span aria-hidden="true"><i className="phone-country-flag"/><b>+91</b></span><input inputMode="tel" name="phone" onChange={updateField} pattern="[0-9 +()-]{10,15}" placeholder="Enter your phone number" required type="tel" value={form.phone}/><i aria-hidden="true" className="phone-call-icon"><Icon name="phoneCall"/></i></div><small>We’ll contact you on this number.</small></label>
-          <label className="full-width service-request-field service-request-field-address"><span><i><Icon name="mapPin"/></i>Address <b>*</b></span><textarea name="address" onChange={updateField} placeholder="Enter your complete address" required rows="3" value={form.address}/><small>House/Flat, Street, City, State, PIN code</small></label>
+          <label className="service-request-field service-request-field-name"><i className="service-request-field-icon"><Icon name="profile"/></i><div><span>Full name <b>*</b></span><input autoFocus name="name" onChange={updateField} placeholder="Enter your full name" required type="text" value={form.name}/></div></label>
+          <label className="service-request-field service-request-field-phone"><i className="service-request-field-icon"><Icon name="phone"/></i><div><span>Phone number <b>*</b></span><div className="service-request-phone-input"><span aria-hidden="true"><i className="phone-country-flag"/><b>+91</b></span><input inputMode="tel" name="phone" onChange={updateField} pattern="[0-9 +()-]{10,15}" placeholder="Enter your phone number" required type="tel" value={form.phone}/><i aria-hidden="true" className="phone-call-icon"><Icon name="phoneCall"/></i></div></div></label>
+          <label className="full-width service-request-field service-request-field-address"><i className="service-request-field-icon"><Icon name="mapPin"/></i><div><span>Address <b>*</b></span><textarea name="address" onChange={updateField} placeholder="Enter your complete address" required rows="3" value={form.address}/></div></label>
         </div>
         <div className="service-request-selected">
           <i><Icon name={selectedService.icon || 'fileCheck'}/></i>
@@ -124,30 +123,26 @@ function ServiceRequestModal() {
         <header>
           <small>Service Request · {selectedService.title}</small>
           <h2 id="service-request-title">How would you like to <em>continue?</em></h2>
-          <p>Your request has been saved. Create your password to access the dashboard and track its progress.</p>
         </header>
         <div className="service-request-choices">
           <button className="service-request-choice-payment" onClick={() => { closeServiceRequest(); window.location.assign(`/register?service=${encodeURIComponent(selectedService.title)}&intent=payment`) }} type="button">
-            <i><Icon name="card"/></i><span><strong>{selectedService.price ? 'Pay for this service' : 'Confirm price & continue'}</strong><small>{selectedService.price ? 'Continue securely after creating your account.' : 'Get the final quote from our team before payment.'}</small><mark><Icon name="shield"/>Secure &amp; Encrypted Payment</mark></span><b>{selectedService.price ? `₹${selectedService.price}` : 'Get Quote'} <em>›</em></b>
+            <i><Icon name="card"/></i><strong>Pay Now</strong><b>{selectedService.price ? `₹${selectedService.price}` : 'Get Quote'}<em>→</em></b>
           </button>
           <button className="service-request-choice-dashboard" onClick={() => { setStatus({ type: '', message: '' }); setStep(3) }} type="button">
-            <i><Icon name="profileLock"/></i><span><strong>Create password first</strong><small>Open the dashboard, upload files, and track status.</small><mark><Icon name="barChart"/>Access Dashboard &amp; Track Progress</mark></span><b>Dashboard <em>›</em></b>
+            <i><Icon name="profileLock"/></i><strong>Create Password</strong><b>Dashboard<em>→</em></b>
           </button>
         </div>
         <button className="service-request-edit" onClick={() => setStep(1)} type="button">← <span>Edit your details</span></button>
       </div> : null}
       {step === 3 ? <div className="service-password-step">
         <header>
-          <div><small>Service Request · {selectedService.title}</small><h2 id="service-request-title">Create your dashboard <em>password</em></h2><p>Use your phone number and this password whenever you return to your account.</p></div>
-          <i aria-hidden="true"><Icon name="lock"/></i>
+          <h2 id="service-request-title">Create your <em>password</em></h2>
         </header>
-        <div className="service-login-id"><i><Icon name="phone"/></i><div><small>Your dashboard login</small><strong>{form.phone}</strong><span>Use this phone number with the password below.</span></div><b><Icon name="lock"/>Keep it safe</b></div>
         <form onSubmit={createDashboard}>
-          <label className="service-password-field"><span><strong>Create password</strong><small>Minimum 6 characters</small></span><div><Icon name="lock"/><input autoFocus minLength="6" onChange={(event)=>setPassword(event.target.value)} placeholder="Enter your password" required type={showPassword?'text':'password'} value={password}/><button aria-label={showPassword?'Hide password':'Show password'} onClick={()=>setShowPassword((visible)=>!visible)} type="button"><Icon name={showPassword?'eyeOff':'eye'}/></button></div></label>
+          <label className="service-password-field"><div><Icon name="lock"/><input autoFocus minLength="6" onChange={(event)=>setPassword(event.target.value)} placeholder="Enter your password" required type={showPassword?'text':'password'} value={password}/><button aria-label={showPassword?'Hide password':'Show password'} onClick={()=>setShowPassword((visible)=>!visible)} type="button"><Icon name={showPassword?'eyeOff':'eye'}/></button></div><small>Minimum 6 characters</small></label>
           {status.message ? <p className={`form-message ${status.type}`}>{status.message}</p> : null}
           <button className="service-password-submit" disabled={submitting} type="submit"><span>{submitting?'Creating dashboard…':'Create Password & Open Dashboard'}</span><b>→</b></button>
           <button className="service-password-back" onClick={()=>{setStatus({type:'',message:''});setStep(2)}} type="button">← <span>Back to options</span></button>
-          <p className="service-request-secure"><Icon name="shield"/>Your information is secure with us.</p>
         </form>
       </div> : null}
     </section>

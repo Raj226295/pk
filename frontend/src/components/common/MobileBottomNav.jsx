@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { createPortal } from 'react-dom'
 import { Icon } from '../../pages/public/Home.jsx'
+import AdminIcon from '../admin/AdminIcon.jsx'
 import navHome from '../../assets/nav-home.png'
 import navTaxServices from '../../assets/nav-tax-services.png'
 import navInfluencer from '../../assets/nav-influencer.png'
@@ -68,11 +69,10 @@ function MobileBottomNav({ dashboard = false }) {
 
   const items = dashboard
     ? [
-        { label: 'Home', to: '/dashboard', icon: 'home', end: true },
-        { label: 'Tax Services', to: '/dashboard/services?category=tax', icon: 'taxFile', category: 'tax' },
-        { label: 'Influencer', to: '/dashboard/services?category=influencer', icon: 'megaphone', category: 'influencer' },
-        { label: 'Web & Apps', to: '/dashboard/services?category=web', icon: 'code', category: 'web' },
-        { label: 'Marketing', to: '/dashboard/services?category=marketing', icon: 'growthChart', category: 'marketing' },
+        { label: 'Overview', to: '/dashboard', icon: 'overview', end: true },
+        { label: 'Services', to: '/dashboard/services', icon: 'services' },
+        { label: 'Requests', to: '/dashboard/upload-documents', icon: 'document' },
+        { label: 'Payments', to: '/dashboard/payments', icon: 'payment' },
         { label: 'Profile', to: '/dashboard/profile', icon: 'profile' },
       ]
     : [
@@ -93,10 +93,10 @@ function MobileBottomNav({ dashboard = false }) {
   }
 
   const navigation = (
-    <nav aria-label="Mobile navigation" className="mobile-bottom-nav" ref={navigationRef}>
+    <nav aria-label="Mobile navigation" className={`mobile-bottom-nav${dashboard ? ' dashboard-mobile-bottom-nav' : ''}`} ref={navigationRef}>
       {items.map((item) => (
         <NavLink className={({ isActive }) => getItemClass(item, isActive)} end={item.end} key={item.label} to={item.to}>
-          {navigationIcons[item.icon]
+          {dashboard ? <AdminIcon name={item.icon} size={22} /> : navigationIcons[item.icon]
             ? <img alt="" aria-hidden="true" className="mobile-nav-custom-icon" src={navigationIcons[item.icon]} />
             : <Icon name={item.icon} />}
           <span>{item.label}</span>

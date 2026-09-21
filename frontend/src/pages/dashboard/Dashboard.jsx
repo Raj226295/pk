@@ -663,6 +663,7 @@ function Dashboard() {
                 <h3>Recent Activity</h3>
                 <p>Recent uploads, payment changes, and appointment updates.</p>
               </div>
+              <button className="overview-view-all" onClick={() => navigate('/dashboard/messages')} type="button">View All ›</button>
             </div>
 
               {recentActivity.length ? (
@@ -686,6 +687,7 @@ function Dashboard() {
                 <h3>Quick Actions</h3>
                 <p>Use the most common actions directly from your overview page.</p>
               </div>
+              <button className="overview-view-all" onClick={() => navigate('/dashboard/services')} type="button">View All ›</button>
             </div>
 
             <div className="quick-action-grid dashboard-quick-action-grid">
@@ -704,7 +706,7 @@ function Dashboard() {
                   <p>Important admin and system messages in one compact section.</p>
                 </div>
                 <button className="button button-ghost" onClick={() => navigate('/dashboard/messages')} type="button">
-                  View All
+                  View All ›
                 </button>
               </div>
 

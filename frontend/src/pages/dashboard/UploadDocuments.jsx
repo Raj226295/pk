@@ -21,6 +21,14 @@ import addressProofIcon from '../../assets/document-icons/address-proof.png'
 import mobileIcon from '../../assets/document-icons/mobile.png'
 import emailIcon from '../../assets/document-icons/email.png'
 import notesIcon from '../../assets/document-icons/notes.png'
+import gstServiceIllustration from '../../assets/upload-service-icons/gst.png'
+import incomeTaxIllustration from '../../assets/upload-service-icons/income-tax.png'
+import accountingIllustration from '../../assets/upload-service-icons/accounting.png'
+import registrationIllustration from '../../assets/upload-service-icons/registration.png'
+import influencerIllustration from '../../assets/upload-service-icons/influencer.png'
+import marketingIllustration from '../../assets/upload-service-icons/marketing.png'
+import webAppsIllustration from '../../assets/upload-service-icons/web-apps.png'
+import backIllustration from '../../assets/upload-service-icons/back.png'
 
 const initialForm = {
   documentType: documentTypeOptions[0],
@@ -67,13 +75,13 @@ const documentTypeByServiceName = new Map(
 )
 
 const serviceCategories = [
-  { name: 'GST Services', icon: 'gst', tone: 'gold', services: ['GST Registration', 'GST Return Filing', 'GST Notice Handling', 'LUT & Refunds', 'E-Way Bill & E-Invoicing', 'GST Audit & Health Check'] },
-  { name: 'Income Tax', icon: 'taxFile', tone: 'blue', services: ['Income Tax Filing', 'ITR Filing (All Forms)', 'Tax Planning & Consultancy', 'Income Tax Notices', 'TDS Return Filing', 'Capital Gains & Crypto', 'Business Tax Compliance'] },
-  { name: 'Accounting', icon: 'calculator', tone: 'green', services: ['Accounting / Bookkeeping', 'Bookkeeping', 'Payroll Management', 'Virtual CFO Services'] },
-  { name: 'Business Registration', icon: 'building', tone: 'purple', services: ['Company Registration', 'Food License', 'MSME Registration', 'Trade License', 'IEC / DSC'] },
-  { name: 'Influencer Marketing', icon: 'megaphone', tone: 'rose', services: ['Instagram Influencer Marketing', 'YouTube Influencer Marketing', 'Brand Collaboration', 'Campaign Management', 'Influencer Discovery', 'Performance Tracking'] },
-  { name: 'Web & App Development', icon: 'code', tone: 'blue', services: ['Business Website', 'E-commerce Website', 'Website Development', 'App Development', 'CRM Development'] },
-  { name: 'Marketing', icon: 'growthChart', tone: 'orange', services: ['SEO', 'Google Ads', 'Meta Ads', 'Social Media Marketing', 'Content Marketing'] },
+  { name: 'GST Services', icon: 'gst', artwork: gstServiceIllustration, tone: 'gold', services: ['GST Registration', 'GST Return Filing', 'GSTR-1 Filing', 'GSTR-3B Filing', 'Notice Handling', 'LUT Filing', 'Refund Services', 'GST Audit & Compliance', 'GST Consultation'] },
+  { name: 'Income Tax', icon: 'taxFile', artwork: incomeTaxIllustration, tone: 'blue', services: ['Individual ITR', 'Business ITR', 'Income Tax Return', 'Tax Planning', 'TDS Return', 'TDS Compliance', 'Notice Handling', 'Tax Consultation'] },
+  { name: 'Accounting', icon: 'calculator', artwork: accountingIllustration, tone: 'green', services: ['Bookkeeping', 'Payroll', 'MIS Reporting', 'Virtual CFO', 'Financial Reporting', 'Accounts Management', 'Bank Reconciliation', 'Financial Compliance'] },
+  { name: 'Business Registration', icon: 'building', artwork: registrationIllustration, tone: 'purple', services: ['Private Limited Company', 'LLP Registration', 'Partnership Registration', 'MSME/Udyam Registration', 'Trade License', 'DSC', 'IEC Registration', 'Business Compliance'] },
+  { name: 'Influencer Marketing', icon: 'megaphone', artwork: influencerIllustration, tone: 'rose', services: ['Influencer Campaign', 'Brand Promotion', 'Product Promotion', 'Instagram Collaboration', 'YouTube Collaboration', 'Creator Collaboration', 'Influencer Marketing Campaign'] },
+  { name: 'Web & App Development', icon: 'code', artwork: webAppsIllustration, tone: 'blue', services: ['Business Website', 'E-commerce Website', 'Custom Web Application', 'Mobile App Development', 'UI/UX Design', 'Website Redesign', 'Website Maintenance'] },
+  { name: 'Marketing', icon: 'growthChart', artwork: marketingIllustration, tone: 'orange', services: ['SEO', 'Social Media Marketing', 'Google Ads', 'Meta Ads', 'Content Marketing', 'Performance Marketing', 'Branding', 'Marketing Campaign'] },
 ]
 
 const serviceDescriptions = {
@@ -88,6 +96,13 @@ const serviceDescriptions = {
 const serviceIcons = {
   'GST Registration': 'gst',
   'GST Return Filing': 'documentStack',
+  'GSTR-1 Filing': 'documentStack',
+  'GSTR-3B Filing': 'taxFile',
+  'Notice Handling': 'shield',
+  'LUT Filing': 'returnArrow',
+  'Refund Services': 'wallet',
+  'GST Audit & Compliance': 'audit',
+  'GST Consultation': 'headset',
   'GST Notice Handling': 'shield',
   'LUT & Refunds': 'returnArrow',
   'E-Way Bill & E-Invoicing': 'truck',
@@ -124,6 +139,82 @@ const serviceIcons = {
   'Meta Ads': 'barChart',
   'Social Media Marketing': 'megaphone',
   'Content Marketing': 'book',
+  'Individual ITR': 'taxFile',
+  'Business ITR': 'briefcase',
+  'Income Tax Return': 'tax',
+  'Tax Planning': 'calculator',
+  'TDS Return': 'documentStack',
+  'TDS Compliance': 'shield',
+  'Tax Consultation': 'headset',
+  Payroll: 'users',
+  'MIS Reporting': 'barChart',
+  'Virtual CFO': 'briefcase',
+  'Financial Reporting': 'pieChart',
+  'Accounts Management': 'calculator',
+  'Bank Reconciliation': 'wallet',
+  'Financial Compliance': 'fileCheck',
+  'Private Limited Company': 'building',
+  'LLP Registration': 'building',
+  'Partnership Registration': 'users',
+  'MSME/Udyam Registration': 'building',
+  DSC: 'key',
+  'IEC Registration': 'fileCheck',
+  'Business Compliance': 'shield',
+  'Custom Web Application': 'code',
+  'Mobile App Development': 'phone',
+  'UI/UX Design': 'grid',
+  'Website Redesign': 'refresh',
+  'Website Maintenance': 'audit',
+  'Performance Marketing': 'speedometer',
+  Branding: 'award',
+  'Marketing Campaign': 'rocket',
+  'Influencer Campaign': 'megaphone',
+  'Brand Promotion': 'award',
+  'Product Promotion': 'cart',
+  'Instagram Collaboration': 'instagram',
+  'YouTube Collaboration': 'youtube',
+  'Creator Collaboration': 'users',
+  'Influencer Marketing Campaign': 'sparkle',
+}
+
+const categoryDescriptions = {
+  'GST Services': 'Registration, return filing, compliance and more.',
+  'Income Tax': 'ITR filing, tax planning, TDS and consultation.',
+  Accounting: 'Bookkeeping, payroll, MIS and financial reporting.',
+  'Business Registration': 'Company setup, licenses and registrations.',
+  'Web & App Development': 'Websites, apps and custom digital products.',
+  Marketing: 'SEO, paid ads, content and social media marketing.',
+  'Influencer Marketing': 'Brand promotions and creator collaborations.',
+}
+
+const workflowDocumentsByCategory = {
+  'GST Services': ['PAN Card', 'Aadhaar Card', 'Business Address Proof', 'Business Registration Proof', 'Bank Account Details', 'Photograph'],
+  'Income Tax': ['PAN Card', 'Aadhaar Card', 'Bank Account Details', 'Income Proof / Form 16', 'Previous Return Copy'],
+  Accounting: ['PAN Card', 'Business Registration Proof', 'Bank Statements', 'Sales and Purchase Records', 'Existing Accounting Data'],
+  'Business Registration': ['PAN Card', 'Aadhaar Card', 'Business Address Proof', 'Photograph', 'Proposed Business Details'],
+  'Web & App Development': ['Logo / Brand Assets', 'Business Details', 'Content', 'Product Data', 'Existing Website Details', 'Reference Files'],
+  Marketing: ['Brand Logo', 'Brand Guidelines', 'Campaign Brief', 'Product / Service Details', 'Target Audience Information', 'Existing Creatives'],
+  'Influencer Marketing': ['Campaign Brief', 'Brand Logo', 'Product Details', 'Creative Guidelines', 'Reference Content', 'Campaign Requirements'],
+}
+
+function UploadStepper({ step }) {
+  const steps = ['Select Service', 'Select Type', 'Upload Documents']
+
+  return (
+    <nav aria-label="Upload progress" className="upload-flow-stepper" style={{ '--completed-line': `${(step - 1) * 33.333}%` }}>
+      {steps.map((label, index) => {
+        const stepNumber = index + 1
+        const isComplete = stepNumber < step
+        const isActive = stepNumber === step
+        return (
+          <div className={`upload-flow-step${isActive ? ' active' : ''}${isComplete ? ' complete' : ''}`} key={label}>
+            <span>{isComplete ? '✓' : stepNumber}</span>
+            <strong>{label}</strong>
+          </div>
+        )
+      })}
+    </nav>
+  )
 }
 
 function getLatestMatchingDocument(documents = [], { requiredDocument = '', documentType = '', serviceType = '' }) {
@@ -159,6 +250,7 @@ function UploadDocuments() {
   const [activeCategory, setActiveCategory] = useState('')
   const [selectedSubservice, setSelectedSubservice] = useState('')
   const [isServiceSelectionComplete, setIsServiceSelectionComplete] = useState(Boolean(selectedCatalogServiceId || selectedServiceId))
+  const [flowStep, setFlowStep] = useState(selectedCatalogServiceId || selectedServiceId ? 3 : 1)
 
   const selectedCatalogItem = useMemo(
     () => serviceCatalog.find((service) => service._id === selectedCatalogServiceId) || null,
@@ -196,14 +288,14 @@ function UploadDocuments() {
   const activeCategoryServices = useMemo(() => {
     const category = serviceCategories.find((item) => item.name === activeCategory)
     if (!category) return []
-    const categoryOptions = category.services.filter((service) => serviceOptions.includes(service))
-    return categoryOptions.length ? categoryOptions : category.services
-  }, [activeCategory, serviceOptions])
+    return category.services
+  }, [activeCategory])
 
   const selectCategory = (categoryName) => {
     setActiveCategory(categoryName)
     setSelectedSubservice('')
     setIsServiceSelectionComplete(false)
+    setFlowStep(2)
   }
 
   const continueWithSelectedService = () => {
@@ -214,6 +306,20 @@ function UploadDocuments() {
       documentType: documentTypeByServiceName.get(selectedSubservice) || selectedSubservice,
     }))
     setIsServiceSelectionComplete(true)
+    setFlowStep(3)
+  }
+
+  const goBackInUploadFlow = () => {
+    if (flowStep === 1) {
+      navigate('/dashboard')
+      return
+    }
+
+    if (flowStep === 3) {
+      setIsServiceSelectionComplete(false)
+    }
+
+    setFlowStep((current) => Math.max(1, current - 1))
   }
 
   useEffect(() => {
@@ -293,9 +399,15 @@ function UploadDocuments() {
 
     if (fallbackDocumentType && fallbackDocumentType !== 'General') {
       const normalizedType = fallbackDocumentType.toLowerCase()
+      const workflowCategory = serviceCategories.find((category) => category.services.includes(fallbackDocumentType))
       const isDigitalBuild = /website|web app|app development|e-commerce|landing page/.test(normalizedType)
       const isMarketing = /marketing|seo|ads|content|influencer|lead generation|campaign|booking/.test(normalizedType)
-      const requiredDocuments = isDigitalBuild
+      const requiredDocuments = workflowCategory
+        ? (workflowDocumentsByCategory[workflowCategory.name] || FALLBACK_REQUIRED_DOCUMENTS).map((label) => ({
+            label,
+            inputType: getRequiredDocumentInputType(label),
+          }))
+        : isDigitalBuild
         ? [
             { label: 'Business / brand name', inputType: 'text' },
             { label: 'Mobile number', inputType: 'text' },
@@ -617,18 +729,27 @@ function UploadDocuments() {
   }
 
   if (loading) {
-    return <Loader message="Loading upload form..." />
+    return <Loader variant="upload" />
   }
 
   return (
     <div className="page-stack upload-documents-page">
       <PageHeader
-        description="Upload the required documents to proceed."
-        eyebrow="Upload Documents"
-        title={selectedCatalogItem?.name || selectedService?.name || 'Submit Client Documents'}
+        description={flowStep === 1 ? 'Select the service for which you want to upload documents.' : flowStep === 2 ? 'Select the service type for your chosen service.' : 'Upload the required documents to proceed.'}
+        eyebrow="Client Workspace"
+        title="Upload Documents"
       />
 
-      {activeDocumentGuide ? (
+      {flowStep > 1 ? <div className="upload-flow-controls">
+        <button aria-label={flowStep === 1 ? 'Back to overview' : 'Back to previous step'} className="upload-flow-back" onClick={goBackInUploadFlow} type="button">
+          <img alt="" aria-hidden="true" src={backIllustration} />
+          <span>Back</span>
+        </button>
+      </div> : null}
+
+      <UploadStepper step={flowStep} />
+
+      {flowStep === 3 && activeDocumentGuide ? (
         <section className="panel guided-upload-panel">
           <div className="guided-upload-layout">
             <div className="guided-upload-copy">
@@ -663,10 +784,10 @@ function UploadDocuments() {
         </section>
       ) : null}
 
-      {!isServiceSelectionComplete ? <section className="panel mobile-upload-service-card">
+      {flowStep === 1 ? <section className="panel mobile-upload-service-card upload-flow-selection-card upload-flow-content">
         <div className="service-category-heading">
           <span>1</span>
-          <div><strong>Select Service Category</strong><small>Choose the service category you need.</small></div>
+          <div><strong>Select Service</strong><small>Choose the service category to proceed.</small></div>
         </div>
         <div className="service-category-card-grid" role="list">
           {serviceCategories.map((category) => {
@@ -680,26 +801,28 @@ function UploadDocuments() {
                 onClick={() => selectCategory(category.name)}
                 type="button"
               >
-                <i><Icon name={category.icon} /></i>
-                <span>{category.name}</span>
+                <i>{category.artwork ? <img alt="" src={category.artwork} /> : <Icon name={category.icon} />}</i>
+                <span><strong>{category.name}</strong><small>{categoryDescriptions[category.name]}</small></span>
                 {isActive ? <b aria-label="Selected">✓</b> : null}
               </button>
             )
           })}
         </div>
 
-        <section aria-live="polite" className={`service-subservice-panel${activeCategory ? ' is-open' : ''}`}>
+      </section> : null}
+
+      {flowStep === 2 ? <section aria-live="polite" className="panel service-subservice-panel is-open upload-flow-type-card upload-flow-content">
           <div className="service-subservice-panel-inner">
             <header>
               <span>2</span>
-              <div><strong>Select Service</strong><small>Choose the specific service under {activeCategory}.</small></div>
-              <em>{activeCategory}</em>
+              <div><strong>Select Service Type</strong><small>Choose the specific service under {activeCategory}.</small></div>
             </header>
             <div className="service-subservice-list" role="list">
               {activeCategoryServices.map((serviceName) => {
                 const isSelected = selectedSubservice === serviceName
+                const activeTone = serviceCategories.find((category) => category.name === activeCategory)?.tone || 'blue'
                 return (
-                  <button aria-pressed={isSelected} className={isSelected ? 'selected' : ''} key={serviceName} onClick={() => setSelectedSubservice(serviceName)} type="button">
+                  <button aria-pressed={isSelected} className={`service-type-option ${activeTone}${isSelected ? ' selected' : ''}`} key={serviceName} onClick={() => setSelectedSubservice(serviceName)} type="button">
                     <i><Icon name={serviceIcons[serviceName] || serviceCategories.find((category) => category.name === activeCategory)?.icon || 'fileCheck'} /></i>
                     <span><strong>{serviceName}</strong><small>{serviceDescriptions[serviceName] || `Get expert help with ${serviceName}.`}</small></span>
                     {isSelected ? <b>✓</b> : <b>›</b>}
@@ -713,9 +836,9 @@ function UploadDocuments() {
             </button>
           </div>
         </section>
-      </section> : null}
+      : null}
 
-      {isServiceSelectionComplete ? <section className="upload-documents-workspace" id="required-documents">
+      {flowStep === 3 && isServiceSelectionComplete ? <section className="upload-documents-workspace upload-flow-content" id="required-documents">
         <form className="panel form-panel multi-document-form" onSubmit={handleSubmit}>
           <h3>Upload Required Documents</h3>
 
@@ -753,6 +876,7 @@ function UploadDocuments() {
               onChange={handleChange}
               placeholder="Optional message for admin"
               rows="4"
+              maxLength="500"
               value={form.notes}
             />
           </label>
@@ -771,6 +895,7 @@ function UploadDocuments() {
                     <input checked={item.isReady} readOnly type="checkbox" />
                     <span>{item.requiredDocument}</span>
                   </label>
+                  <em className="document-required-badge">Required</em>
                   <span
                     className={`document-checklist-status ${
                       item.selectedFile
@@ -799,6 +924,7 @@ function UploadDocuments() {
                   {item.existingDocument?.status === 'rejected' && !item.selectedFile ? (
                     <small>Previous upload was rejected. Please choose a corrected file.</small>
                   ) : null}
+                  {item.inputType === 'file' ? <small>PDF, JPG or PNG · Max 10 MB</small> : null}
                 </div>
 
                 <div className="document-upload-field">
