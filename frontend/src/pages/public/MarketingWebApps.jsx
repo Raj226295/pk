@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Icon } from './Home.jsx'
 import influencerPortraits from '../../assets/influencer-portraits-grid.png'
 import webGrowthDashboard from '../../assets/web-growth-dashboard.png'
@@ -69,8 +69,7 @@ const influencerCategoryIcons = {
   'Fitness & Health':'dumbbell', Gaming:'gamepad',
 }
 
-function InfluencerPage() {
-  const { requestService } = useServiceRequest()
+export function InfluencerMarketplace({ onBook }) {
   const [query,setQuery] = useState('')
   const [category,setCategory] = useState('All')
   const [platform,setPlatform] = useState('All Platforms')
@@ -85,6 +84,8 @@ function InfluencerPage() {
     ['mapPin','Local Influencer Drives','Hyperlocal campaigns that improve visibility and sales in your area.'],
   ]
 
+  const bookCreator = (creator) => onBook(creator)
+
   return <div className="influencer-marketplace">
     <header className="influencer-hero"><span>Creator Marketplace</span><h1>Find the right voice for your brand</h1><p>Discover verified creators, compare real audience metrics and launch campaigns with confidence.</p></header>
 
@@ -98,14 +99,21 @@ function InfluencerPage() {
 
     <section className="influencer-results">
       <div className="influencer-results-heading"><h2><Icon name="users"/>{visibleCreators.length} Creators match your filters</h2><button onClick={()=>{setQuery('');setCategory('All');setPlatform('All Platforms')}} type="button">View All Influencers <span>→</span></button></div>
-      {visibleCreators.length ? <div className="influencer-card-grid">{visibleCreators.map((creator)=><article className="influencer-card" key={creator.handle} onClick={()=>requestService({ title:`Influencer Booking — ${creator.name}`, description:`${creator.platform} · ${creator.category} · ${creator.followers} followers`, icon:'users', price:creator.price })} onKeyDown={(event)=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();requestService({ title:`Influencer Booking — ${creator.name}`, description:`${creator.platform} · ${creator.category} · ${creator.followers} followers`, icon:'users', price:creator.price })}}} role="button" tabIndex="0">
+      {visibleCreators.length ? <div className="influencer-card-grid">{visibleCreators.map((creator)=><article className="influencer-card" key={creator.handle} onClick={()=>bookCreator(creator)} onKeyDown={(event)=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();bookCreator(creator)}}} role="button" tabIndex="0">
         <div className={`influencer-photo influencer-photo-${creator.index}`} style={{backgroundImage:`url(${influencerPortraits})`}}><span><Icon name={creator.platform==='Instagram'?'instagram':'youtube'}/>{creator.category}</span></div>
-        <div className="influencer-card-body"><h3>{creator.name}<b title="Verified creator"><Icon name="verified"/></b></h3><p><Icon name={creator.platform==='Instagram'?'instagram':'youtube'}/>{creator.handle}</p><div className="influencer-metrics"><div><Icon name="users"/><strong>{creator.followers}</strong><small>Followers</small></div><div><Icon name="growthChart"/><strong>{creator.engagement}</strong><small>Engagement</small></div><div><Icon name="mapPin"/><strong>{creator.location}</strong><small>Location</small></div></div><footer><strong>₹{creator.price}</strong><Link onClick={(event)=>requestService({ title:`Influencer Booking — ${creator.name}`, description:`${creator.platform} · ${creator.category} · ${creator.followers} followers`, icon:'users', price:creator.price }) && event.preventDefault()} to="/contact">Book Now</Link></footer></div>
+        <div className="influencer-card-body"><h3>{creator.name}<b title="Verified creator"><Icon name="verified"/></b></h3><p><Icon name={creator.platform==='Instagram'?'instagram':'youtube'}/>{creator.handle}</p><div className="influencer-metrics"><div><Icon name="users"/><strong>{creator.followers}</strong><small>Followers</small></div><div><Icon name="growthChart"/><strong>{creator.engagement}</strong><small>Engagement</small></div><div><Icon name="mapPin"/><strong>{creator.location}</strong><small>Location</small></div></div><footer><strong>₹{creator.price}</strong><button onClick={(event)=>{event.stopPropagation();bookCreator(creator)}} type="button">Book Now</button></footer></div>
       </article>)}</div> : <div className="influencer-empty"><Icon name="search"/><h3>No creators found</h3><p>Try another name, niche or platform.</p></div>}
     </section>
 
     <section className="influencer-campaigns"><header><span>Full-Funnel Campaigns</span><h2>More than bookings — complete campaign management</h2><p>From brand promotions to product reviews, we handle everything with a data-driven approach.</p></header><div>{campaignServices.map(([icon,title,copy])=><article key={title}><i><Icon name={icon}/></i><section><h3>{title}</h3><p>{copy}</p></section></article>)}</div></section>
   </div>
+}
+
+function InfluencerPage() {
+  const navigate = useNavigate()
+  const bookCreator = () => navigate('/login')
+
+  return <InfluencerMarketplace onBook={bookCreator} />
 }
 
 export const webPackages = [

@@ -30,6 +30,26 @@ const initialForm = {
 
 const activeServiceStatuses = ['pending', 'approved', 'in progress']
 
+// The required-document checklist has a small, deliberately limited icon set.
+// Keeping these inline makes every mobile icon sharp at every pixel density and
+// avoids mixing image assets with the dashboard's outline-icon language.
+function RequiredDocumentIcon({ name }) {
+  const icons = {
+    card: <><rect x="3" y="5" width="18" height="14" rx="2.5" /><path d="M3 10h18M7 15h4" /></>,
+    identity: <><circle cx="12" cy="8" r="3.25" /><path d="M5 20v-1.2a7 7 0 0 1 14 0V20" /></>,
+    bank: <><path d="m3 9 9-5 9 5" /><path d="M5 10h14M4 20h16M6 10v10M10 10v10M14 10v10M18 10v10" /></>,
+    phone: <path d="M7 3.8 4.7 5.1c-.8.5-1.1 1.5-.8 2.4 1.7 5.2 5.8 9.3 11 11 .9.3 1.9 0 2.4-.8l1.3-2.3-3.7-2.1-1.3 1.3c-2.1-1.1-3.8-2.8-4.9-4.9l1.3-1.3z" />,
+    mail: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m4 7 8 6 8-6" /></>,
+    cloudUpload: <><path d="M7 18a4 4 0 1 1 .7-7.94A5.5 5.5 0 0 1 18.3 12H19a3 3 0 0 1 0 6H7" /><path d="M12 20V12M8.75 15.25 12 12l3.25 3.25" /></>,
+  }
+
+  return (
+    <svg aria-hidden="true" className="required-document-icon" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
+      {icons[name] || icons.card}
+    </svg>
+  )
+}
+
 // Default fallback documents shown when no service/catalog match is found
 const FALLBACK_REQUIRED_DOCUMENTS = [
   { label: 'Identity Proof', inputType: 'file' },
@@ -567,13 +587,12 @@ function UploadDocuments() {
   const getRequirementIcon = (label = '') => {
     const normalizedLabel = label.toLowerCase()
 
-    if (normalizedLabel.includes('aadhaar')) return 'users'
-    if (normalizedLabel.includes('passport') || normalizedLabel.includes('photo')) return 'camera'
-    if (normalizedLabel.includes('business')) return 'building'
-    if (normalizedLabel.includes('address') || normalizedLabel.includes('electricity') || normalizedLabel.includes('rent')) return 'fileCheck'
-    if (normalizedLabel.includes('mobile') || normalizedLabel.includes('phone')) return 'phoneCall'
+    if (normalizedLabel.includes('pan')) return 'card'
+    if (normalizedLabel.includes('aadhaar')) return 'identity'
+    if (normalizedLabel.includes('bank')) return 'bank'
+    if (normalizedLabel.includes('mobile') || normalizedLabel.includes('phone')) return 'phone'
     if (normalizedLabel.includes('email')) return 'mail'
-    return 'tax'
+    return 'card'
   }
 
   const getRequirementDescription = (label = '') => {
@@ -887,7 +906,7 @@ function UploadDocuments() {
                 key={`${form.documentType}-${item.requiredDocument}`}
               >
                 <span className="document-type-icon" aria-hidden="true">
-                  <Icon name={getRequirementIcon(item.requiredDocument)} />
+                  <RequiredDocumentIcon name={getRequirementIcon(item.requiredDocument)} />
                 </span>
                 <div className="document-checklist-head">
                   <label className="document-checklist-checkbox">
@@ -938,7 +957,7 @@ function UploadDocuments() {
                     />
                   ) : (
                     <label className="document-file-picker">
-                      <Icon name="upload" />
+                      <RequiredDocumentIcon name="cloudUpload" />
                       <span>{item.selectedFile ? 'Change File' : 'Choose File'}</span>
                       <input
                         accept=".pdf,image/*"

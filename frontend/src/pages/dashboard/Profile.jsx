@@ -321,7 +321,7 @@ function Profile() {
             Company Name
             <span><Icon name="building" /><input name="companyName" onChange={handleProfileChange} placeholder="Enter your company name" type="text" value={profileForm.companyName} /></span>
           </label>
-          <button className="profile-primary-button" type="submit"><Icon name="fileCheck" />Save Profile</button>
+          <button className="profile-primary-button" type="submit"><Icon name="fileCheck" />Save Changes</button>
         </form>
       </section>
 
@@ -355,7 +355,7 @@ function Profile() {
       </form>
 
       <article className="profile-section-card profile-security-card">
-        <header><span><Icon name="shield" /></span><div><h3>Security Settings</h3><p>Manage your account security preferences.</p></div></header>
+        <header><span><Icon name="shield" /></span><div><h3>Account Security</h3><p>Manage your account security preferences.</p></div></header>
         {isAdmin ? <div className="admin-two-factor-row"><span><Icon name="lock" /></span><section><strong>Two-Factor Authentication</strong><small>Add an extra layer of security to your account.</small></section><button aria-label="Two-factor authentication is not configured" className="admin-profile-toggle" disabled type="button"><i /></button></div> : null}
         <div><span><Icon name="logout" /></span><section><strong>Logout from this device</strong><small>Use this option if you are on a shared device after finishing your work.</small></section><button onClick={handleLogout} type="button"><Icon name="logout" />Logout</button></div>
       </article>

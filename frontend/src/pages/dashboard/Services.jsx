@@ -9,7 +9,7 @@ import { resolveUploadUrl } from '../../lib/uploads.js'
 import { Icon } from '../public/Home.jsx'
 import ServiceCatalogCard from '../../components/common/ServiceCatalogCard.jsx'
 import { serviceGroups } from '../public/Services.jsx'
-import { directServices, influencers, webPackages } from '../public/MarketingWebApps.jsx'
+import { directServices, InfluencerMarketplace, influencers, webPackages } from '../public/MarketingWebApps.jsx'
 
 const visibleServiceStatuses = ['pending', 'approved', 'rejected', 'in progress', 'completed']
 
@@ -189,6 +189,25 @@ function getPaymentHint(service, state) {
   }
 }
 
+function MobileServiceCard({ service, onSelect }) {
+  const price = (service.priceLabel || `From ₹${Number(service.price || 0).toLocaleString('en-IN')}`)
+    .replace(/^Starting\s+/i, 'From ')
+    .replace(/\s+onwards$/i, '')
+  const tags = (service.isTaxGroup ? service.featureItems : service.tags || []).slice(0, 3)
+
+  return (
+    <button className={`mobile-service-card service-tone-${service.tone || 'blue'}`} onClick={onSelect} type="button">
+      <span className="mobile-service-icon"><Icon name={service.icon || 'fileCheck'} /></span>
+      <span className="mobile-service-copy">
+        <span className="mobile-service-titleline"><strong>{service.name}</strong><i className="mobile-service-price">{price}</i></span>
+        <small>{service.description || 'Professional support for your business.'}</small>
+        {tags.length ? <span className="mobile-service-tags">{tags.map((tag) => <i key={tag}>{tag}</i>)}</span> : null}
+      </span>
+      <span className="mobile-service-arrow"><Icon name="arrowRight" /></span>
+    </button>
+  )
+}
+
 function Services() {
   const [searchParams] = useSearchParams()
   const requestedCategory = searchParams.get('category')
@@ -292,6 +311,13 @@ function Services() {
     })
   }
 
+  const handleInfluencerBooking = (creator) => {
+    handleOpenUploadDocuments({
+      name: `Influencer Booking — ${creator.name}`,
+      documentType: `Influencer Booking — ${creator.name}`,
+    })
+  }
+
   return (
     <div className="page-stack services-workspace-page">
       <section className="services-workspace-hero">
@@ -299,11 +325,7 @@ function Services() {
           <span className="eyebrow">Client Workspace</span>
           <h1>Our <em>Services</em></h1>
           <p>Explore our professional services and upload the required documents for the service you need.</p>
-        </div>
-        <div className="services-support-banner">
-          <span><Icon name="headset" /></span>
-          <div><small>Your business</small><strong>Our support</strong></div>
-          <Icon name="fileCheck" />
+          <p className="mobile-services-subtitle">Choose a service to get started.</p>
         </div>
       </section>
 
@@ -324,6 +346,12 @@ function Services() {
           </button>
         ))}
       </section>
+
+      {activeCategory === 'influencer' ? (
+        <section className="dashboard-influencer-marketplace" aria-label="Influencer marketplace">
+          <InfluencerMarketplace onBook={handleInfluencerBooking} />
+        </section>
+      ) : <>
 
       <label className="services-search-box services-mobile-search">
         <Icon name="search" />
@@ -377,6 +405,22 @@ function Services() {
         ) : (
           <EmptyState description="Try another category or a different search term." title="No matching services" />
         )}
+      </section>
+
+      <section className="mobile-services-catalog" aria-label="Available services">
+        {filteredServices.length ? filteredServices.map((service) => (
+          <MobileServiceCard
+            key={service._id}
+            onSelect={() => service.isTaxGroup ? setActiveTaxGroup(service.groupId) : handleOpenUploadDocuments(service)}
+            service={service}
+          />
+        )) : <EmptyState description="Choose another category to view available services." title="No matching services" />}
+
+        <aside className="mobile-services-support">
+          <span><Icon name="headset" /></span>
+          <div><small>Need help?</small><strong>Our support team is here.</strong></div>
+          <button onClick={() => navigate('/contact')} type="button">Contact Support</button>
+        </aside>
       </section>
 
       <section className="panel my-services-panel">
@@ -434,6 +478,7 @@ function Services() {
           <EmptyState description="Selected services will appear here after you choose one from the catalog." title="No active services found" />
         )}
       </section>
+      </>}
     </div>
   )
 }
