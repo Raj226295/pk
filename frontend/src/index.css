@@ -7360,6 +7360,7 @@ textarea {
 @media (max-width: 700px) {
   .site-shell .footer {
     margin-top:24px;
+    padding-bottom:0;
     border-radius:20px 20px 0 0;
     background:linear-gradient(145deg,#031a38,#073766 58%,#031b3a);
   }
@@ -7455,10 +7456,12 @@ textarea {
     border-radius:10px;
   }
   .site-shell .footer-socials svg { width:18px; height:18px; }
-  .site-shell .footer-bottom { padding-bottom:78px; }
+  .site-shell .footer-bottom {
+    padding-bottom:calc(12px + env(safe-area-inset-bottom, 0px));
+  }
   .site-shell .footer-bottom .container {
-    min-height:58px;
-    padding:10px 0;
+    min-height:50px;
+    padding:8px 0;
     gap:8px;
     flex-wrap:wrap;
   }

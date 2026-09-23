@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { publicNavLinks, siteContact, siteSocials } from '../../data/siteData.js'
@@ -10,8 +10,7 @@ const MotionNavLink = motion.create(NavLink)
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
+  const { user } = useAuth()
   const location = useLocation()
   const navRef = useRef(null)
   const reduceMotion = useReducedMotion()
@@ -56,12 +55,6 @@ function Navbar() {
 
   const closeMenu = () => {
     setIsMenuOpen(false)
-  }
-
-  const handleLogout = () => {
-    logout()
-    closeMenu()
-    navigate('/')
   }
 
   return (
@@ -155,19 +148,13 @@ function Navbar() {
           </div>
 
           <div className="nav-actions">
-            {user ? (
-              <button className="button button-primary button-compact" onClick={handleLogout} type="button">
-                Logout
-              </button>
-            ) : (
-              <Link className="button button-login" onClick={closeMenu} to="/login">
-                <svg aria-hidden="true" className="login-icon" focusable="false" viewBox="0 0 24 24">
-                  <circle cx="12" cy="7.2" r="3.8" />
-                  <path d="M4.2 21v-1.8a6.3 6.3 0 0 1 6.3-6.3h3a6.3 6.3 0 0 1 6.3 6.3V21" />
-                </svg>
-                <span>Login</span>
-              </Link>
-            )}
+            <Link className="button button-login" onClick={closeMenu} to="/login">
+              <svg aria-hidden="true" className="login-icon" focusable="false" viewBox="0 0 24 24">
+                <circle cx="12" cy="7.2" r="3.8" />
+                <path d="M4.2 21v-1.8a6.3 6.3 0 0 1 6.3-6.3h3a6.3 6.3 0 0 1 6.3 6.3V21" />
+              </svg>
+              <span>Login</span>
+            </Link>
           </div>
         </div>
       </nav>
