@@ -20,10 +20,10 @@ const serviceUses = [
 
 function PrivacyPolicy() {
     return (
-        <div className="page-stack container">
+        <div className="legal-policy-page container">
 
             {/* ── Hero ── */}
-            <section className="page-hero">
+            <section className="legal-policy-hero">
                 <span className="eyebrow">Legal</span>
                 <h1>Privacy Policy</h1>
                 <p>
@@ -34,10 +34,10 @@ function PrivacyPolicy() {
             </section>
 
             {/* ── Sections ── */}
-            <section className="page-stack">
+            <section className="legal-policy-content">
 
                 {/* 1. Information we collect */}
-                <article className="panel">
+                <article className="legal-policy-section">
                     <h3>Information we collect</h3>
                     <p>When you use our services, we may collect the following personal information:</p>
                     <div className="privacy-tags">
@@ -48,7 +48,7 @@ function PrivacyPolicy() {
                 </article>
 
                 {/* 2. How we use your information */}
-                <article className="panel">
+                <article className="legal-policy-section">
                     <h3>How we use your information</h3>
                     <p>Your information is used to deliver and support the following services:</p>
                     <ul className="privacy-list">
@@ -59,8 +59,8 @@ function PrivacyPolicy() {
                 </article>
 
                 {/* 3. Data security + Cookies — two columns */}
-                <div className="split-section">
-                    <article className="panel">
+                <div className="legal-policy-split">
+                    <article className="legal-policy-section">
                         <h3>Data security</h3>
                         <p>
                             We keep all customer information secure and confidential using industry-standard
@@ -69,7 +69,7 @@ function PrivacyPolicy() {
                         </p>
                     </article>
 
-                    <article className="panel">
+                    <article className="legal-policy-section">
                         <h3>Cookies</h3>
                         <p>
                             Our website may use cookies to improve performance and enhance your browsing
@@ -80,7 +80,7 @@ function PrivacyPolicy() {
                 </div>
 
                 {/* 4. Your rights */}
-                <article className="panel">
+                <article className="legal-policy-section">
                     <h3>Your rights</h3>
                     <p>
                         You have the right to access, correct, or request deletion of the personal information
@@ -90,7 +90,7 @@ function PrivacyPolicy() {
                 </article>
 
                 {/* 5. Changes to this policy */}
-                <article className="panel">
+                <article className="legal-policy-section">
                     <h3>Changes to this policy</h3>
                     <p>
                         We may update this Privacy Policy from time to time. When we do, we will revise the
@@ -100,7 +100,7 @@ function PrivacyPolicy() {
                 </article>
 
                 {/* 6. Contact */}
-                <article className="panel">
+                <article className="legal-policy-section">
                     <h3>Contact us</h3>
                     <p>
                         If you have any questions or concerns about this Privacy Policy, please get in touch:

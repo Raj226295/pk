@@ -3,10 +3,34 @@ import { Link, NavLink, useLocation } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { publicNavLinks, siteContact, siteSocials } from '../../data/siteData.js'
-import logoImg from '../../assets/logo.png' 
+import logoImg from '../../assets/logo-optimized.png' 
 import UserAvatar from './UserAvatar.jsx'
 
 const MotionNavLink = motion.create(NavLink)
+
+const publicNavIconNames = {
+  Home: 'home',
+  'Tax Services': 'file',
+  Marketing: 'chart',
+  Influencers: 'users',
+  'Web & Apps': 'globe',
+  Contact: 'phone',
+  About: 'info',
+}
+
+function PublicNavIcon({ name }) {
+  const paths = {
+    home: <><path d="m3 10 9-7 9 7v10H3z" /><path d="M9 20v-6h6v6" /></>,
+    file: <><path d="M6 3h8l4 4v14H6z" /><path d="M14 3v5h5M9 13h6M9 17h6" /></>,
+    chart: <><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></>,
+    users: <><circle cx="9" cy="8" r="3" /><path d="M3 20v-1a6 6 0 0 1 12 0v1M16 5a3 3 0 0 1 0 6M19 20v-1a6 6 0 0 0-3-5.2" /></>,
+    globe: <><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" /></>,
+    phone: <path d="M7 3.8 4.7 5.1c-.8.5-1.1 1.5-.8 2.4 1.7 5.2 5.8 9.3 11 11 .9.3 1.9 0 2.4-.8l1.3-2.3-3.7-2.1-1.3 1.3c-2.1-1.1-3.8-2.8-4.9-4.9l1.3-1.3z" />,
+    info: <><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></>,
+  }
+
+  return <svg aria-hidden="true" className="public-nav-icon" viewBox="0 0 24 24">{paths[name] || paths.home}</svg>
+}
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -61,7 +85,7 @@ function Navbar() {
     <motion.header
       animate={{ opacity: 1, y: 0 }}
       className="navbar-wrap"
-      initial={reduceMotion ? false : { opacity: 0, y: -18 }}
+      initial={false}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="nav-utility nav-announcement">
@@ -99,18 +123,15 @@ function Navbar() {
         </button>
 
         <div className="mobile-nav-actions" aria-label="Quick actions">
-          <Link
-            aria-label={user ? 'Open notifications' : 'Log in to view notifications'}
-            className="mobile-nav-notification"
-            onClick={closeMenu}
-            to={user ? '/dashboard/notifications' : '/login'}
-          >
-            <svg aria-hidden="true" viewBox="0 0 24 24">
-              <path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
-              <path d="M10 21h4" />
-            </svg>
-            <span aria-hidden="true" className="mobile-nav-notification-dot" />
-          </Link>
+          {user ? (
+            <Link aria-label="Open notifications" className="mobile-nav-notification" onClick={closeMenu} to="/dashboard/notifications">
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+                <path d="M10 21h4" />
+              </svg>
+              <span aria-hidden="true" className="mobile-nav-notification-dot" />
+            </Link>
+          ) : null}
 
           {user ? (
             <Link aria-label="Open profile" className="mobile-nav-profile" onClick={closeMenu} to="/dashboard/profile">
@@ -129,19 +150,21 @@ function Navbar() {
 
         <div className={`nav-links ${isMenuOpen ? 'is-open' : ''}`} id="site-navigation">
           <div className="nav-group">
-            {publicNavLinks.map((link, index) => (
+            {publicNavLinks.map((link) => (
               <MotionNavLink
-                animate={{ opacity: 1, y: 0 }}
                 className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
                 end={link.to === '/'}
-                initial={reduceMotion ? false : { opacity: 0, y: -8 }}
                 key={link.to}
-                onClick={closeMenu}
+                onClick={() => {
+                  // A same-route tap does not change location, so explicitly
+                  // close the drawer instead of relying on the location effect.
+                  closeMenu()
+                }}
                 to={link.to}
-                transition={{ delay: 0.06 + index * 0.045, duration: 0.3 }}
                 whileHover={reduceMotion ? undefined : { y: -2 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.96 }}
               >
+                <span className="public-nav-icon-tile"><PublicNavIcon name={publicNavIconNames[link.label]} /></span>
                 <span>{link.label}</span>
               </MotionNavLink>
             ))}

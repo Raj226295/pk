@@ -1,5 +1,5 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import Sidebar from './Sidebar.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
 import UserAvatar from '../common/UserAvatar.jsx'
@@ -16,6 +16,7 @@ const titleMap = {
   '/dashboard/messages': 'Messages',
   '/dashboard/notifications': 'Notifications',
   '/dashboard/profile': 'Profile',
+  '/dashboard/contact': 'Contact Support',
   '/admin': 'OVERVIEW',
   '/admin/users': 'OVERVIEW',
   '/admin/messages': 'MESSAGE',
@@ -23,6 +24,7 @@ const titleMap = {
   '/admin/documents': 'MY FOLDER',
   '/admin/folders': 'MY FOLDER',
   '/admin/services': 'SERVICES',
+  '/admin/services/influencers': 'INFLUENCERS',
   '/admin/appointments': 'APPOINTMENT',
   '/admin/payments': 'PAYMENTS',
   '/admin/profile': 'PROFILE',
@@ -93,16 +95,7 @@ function DashboardLayout({ role }) {
         </motion.header>
 
         <main className="dashboard-main">
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              animate={{ opacity: 1, x: 0 }}
-              initial={reduceMotion ? false : { opacity: 0, x: 14 }}
-              key={location.pathname}
-              transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <Outlet />
-            </motion.div>
-          </AnimatePresence>
+          <Outlet />
         </main>
       </div>
       {isAdminPanel ? null : <WhatsAppButton />}

@@ -6,7 +6,7 @@ import Loader from '../../components/common/Loader.jsx'
 import api, { extractApiError } from '../../lib/api.js'
 import { formatDateTime } from '../../lib/formatters.js'
 import { Icon } from '../public/Home.jsx'
-import { directServices, influencers, webPackages } from '../public/MarketingWebApps.jsx'
+import { directServices, webPackages } from '../public/MarketingWebApps.jsx'
 import { serviceGroups } from '../public/Services.jsx'
 
 const serviceOptionGroups = [
@@ -19,16 +19,15 @@ const serviceOptionGroups = [
     options: directServices.map(([title]) => title),
   },
   {
-    label: 'Influencers',
-    options: influencers.map((creator) => `Influencer Booking — ${creator.name}`),
-  },
-  {
     label: 'Web & Apps',
     options: webPackages.map((service) => service.title),
   },
+  {
+    label: 'Influencer Marketing',
+    options: ['Influencer Marketing'],
+  },
 ]
 
-const defaultServiceType = 'General consultation'
 const activeAppointmentStatuses = ['pending', 'approved', 'rescheduled', 'confirmed', 'scheduled']
 
 const timeSlots = (() => {
@@ -49,7 +48,8 @@ const timeSlots = (() => {
 const initialForm = {
   scheduledDate: '',
   scheduledTime: '',
-  serviceType: defaultServiceType,
+  mainService: '',
+  serviceType: '',
   notes: '',
 }
 
@@ -91,9 +91,21 @@ function Appointments() {
     setForm((current) => ({ ...current, [event.target.name]: event.target.value }))
   }
 
+  const handleMainServiceChange = (event) => {
+    setForm((current) => ({
+      ...current,
+      mainService: event.target.value,
+      serviceType: '',
+    }))
+  }
+
+  const selectedServiceGroup = serviceOptionGroups.find((group) => group.label === form.mainService)
+
   const handleSubmit = async (event) => {
     event.preventDefault()
     setStatus({ type: '', message: '' })
+    if (!form.mainService) { setStatus({ type: 'error', message: 'Please select a main service.' }); return }
+    if (!form.serviceType) { setStatus({ type: 'error', message: 'Please select a sub-service.' }); return }
     if (!form.scheduledDate) { setStatus({ type: 'error', message: 'Please select a date.' }); return }
     if (!form.scheduledTime) { setStatus({ type: 'error', message: 'Please select a time slot.' }); return }
     setSubmitting(true)
@@ -125,14 +137,17 @@ function Appointments() {
           <h3>Book a consultation</h3>
           <p>Fill in the details to request a consultation with our team.</p>
           <label>
-            Selected service
-            <select name="serviceType" onChange={handleChange} value={form.serviceType}>
-              <option value={defaultServiceType}>{defaultServiceType}</option>
-              {serviceOptionGroups.map((group) => (
-                <optgroup key={group.label} label={group.label}>
-                  {group.options.map((service) => <option key={service} value={service}>{service}</option>)}
-                </optgroup>
-              ))}
+            Main service
+            <select name="mainService" onChange={handleMainServiceChange} required value={form.mainService}>
+              <option value="">Select a main service</option>
+              {serviceOptionGroups.map((group) => <option key={group.label} value={group.label}>{group.label}</option>)}
+            </select>
+          </label>
+          <label>
+            Selected sub-service
+            <select disabled={!selectedServiceGroup} name="serviceType" onChange={handleChange} required value={form.serviceType}>
+              <option value="">{selectedServiceGroup ? 'Select a sub-service' : 'Choose a main service first'}</option>
+              {selectedServiceGroup?.options.map((service) => <option key={service} value={service}>{service}</option>)}
             </select>
           </label>
           <div className="appointment-datetime-group">

@@ -8,7 +8,7 @@ const emptyForm = { name: '', phone: '', address: '' }
 
 function ServiceRequestModal() {
   const { selectedService, closeServiceRequest } = useServiceRequest()
-  const { createLocalServiceSession } = useAuth()
+  const { createLocalServiceSession, register } = useAuth()
   const [form, setForm] = useState(emptyForm)
   const [submitting, setSubmitting] = useState(false)
   const [status, setStatus] = useState({ type: '', message: '' })
@@ -43,7 +43,7 @@ function ServiceRequestModal() {
     const requestPayload = {
       name: form.name,
       phone: form.phone,
-      // Keeps this form compatible with older deployed API versions where email was mandatory.
+      // The contact API requires an email, so use a phone-based placeholder when this flow doesn't collect one.
       email: `service-request-${phoneDigits || Date.now()}@pkbusiness.local`,
       message: `Service: ${selectedService.title}\nAddress: ${form.address}\n${selectedService.description || ''}`,
       source: 'service-card',
@@ -89,9 +89,31 @@ function ServiceRequestModal() {
       }, 450)
     }
 
-    createLocalServiceSession({ name: form.name, phone: form.phone })
-    openSelectedServiceDashboard()
-    setSubmitting(false)
+    try {
+      if (selectedService.influencerId) {
+        try {
+          const phoneDigits = form.phone.replace(/\D/g, '')
+          await register({
+            name: form.name,
+            email: `influencer-${phoneDigits}@pkbusiness.local`,
+            phone: form.phone,
+            password,
+          })
+        } catch (error) {
+          setStatus({ type: 'error', message: extractApiError(error) })
+          setSubmitting(false)
+          return
+        }
+        closeServiceRequest()
+        window.location.assign(`/dashboard/service-request?influencer=${encodeURIComponent(selectedService.influencerId)}`)
+        return
+      }
+
+      createLocalServiceSession({ name: form.name, phone: form.phone })
+      openSelectedServiceDashboard()
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return <div className="service-request-backdrop" onMouseDown={(event) => event.target === event.currentTarget && closeServiceRequest()} role="presentation">
@@ -125,11 +147,11 @@ function ServiceRequestModal() {
           <h2 id="service-request-title">How would you like to <em>continue?</em></h2>
         </header>
         <div className="service-request-choices">
-          <button className="service-request-choice-payment" onClick={() => { closeServiceRequest(); window.location.assign(`/register?service=${encodeURIComponent(selectedService.title)}&intent=payment`) }} type="button">
+          {!selectedService.influencerId ? <button className="service-request-choice-payment" onClick={() => { closeServiceRequest(); window.location.assign(`/register?service=${encodeURIComponent(selectedService.title)}&intent=payment`) }} type="button">
             <i><Icon name="card"/></i><strong>Pay Now</strong><b>{selectedService.price ? `₹${selectedService.price}` : 'Get Quote'}<em>→</em></b>
-          </button>
+          </button> : null}
           <button className="service-request-choice-dashboard" onClick={() => { setStatus({ type: '', message: '' }); setStep(3) }} type="button">
-            <i><Icon name="profileLock"/></i><strong>Create Password</strong><b>Dashboard<em>→</em></b>
+            <i><Icon name="profileLock"/></i><strong>Create Password</strong><b>{selectedService.influencerId ? 'Continue Booking' : 'Dashboard'}<em>→</em></b>
           </button>
         </div>
         <button className="service-request-edit" onClick={() => setStep(1)} type="button">← <span>Edit your details</span></button>
@@ -141,7 +163,7 @@ function ServiceRequestModal() {
         <form onSubmit={createDashboard}>
           <label className="service-password-field"><div><Icon name="lock"/><input autoFocus minLength="6" onChange={(event)=>setPassword(event.target.value)} placeholder="Enter your password" required type={showPassword?'text':'password'} value={password}/><button aria-label={showPassword?'Hide password':'Show password'} onClick={()=>setShowPassword((visible)=>!visible)} type="button"><Icon name={showPassword?'eyeOff':'eye'}/></button></div><small>Minimum 6 characters</small></label>
           {status.message ? <p className={`form-message ${status.type}`}>{status.message}</p> : null}
-          <button className="service-password-submit" disabled={submitting} type="submit"><span>{submitting?'Creating dashboard…':'Create Password & Open Dashboard'}</span><b>→</b></button>
+          <button className="service-password-submit" disabled={submitting} type="submit"><span>{submitting?'Creating account…':selectedService.influencerId?'Create Account & Continue Booking':'Create Password & Open Dashboard'}</span><b>→</b></button>
           <button className="service-password-back" onClick={()=>{setStatus({type:'',message:''});setStep(2)}} type="button">← <span>Back to options</span></button>
         </form>
       </div> : null}

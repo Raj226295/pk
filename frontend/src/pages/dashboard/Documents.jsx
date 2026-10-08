@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import PageHeader from '../../components/common/PageHeader.jsx'
 import StatusBadge from '../../components/common/StatusBadge.jsx'
 import EmptyState from '../../components/common/EmptyState.jsx'
@@ -35,7 +35,7 @@ function getDocumentSessionKey(document) {
   return `${document.serviceType || 'General'}-${timestamp}`
 }
 
-function groupDocumentsByServiceSession(documents) {
+function groupDocumentsByServiceSession(documents, serviceSubmissions = []) {
   const groups = []
   const lookup = new Map()
 
@@ -56,10 +56,37 @@ function groupDocumentsByServiceSession(documents) {
     lookup.get(key).documents.push(document)
   }
 
+  for (const submission of serviceSubmissions) {
+    if (!submission.submittedFields?.length) continue
+    const submittedAt = new Date(submission.createdAt).getTime()
+    const matchingGroup = groups
+      .filter((group) => group.serviceType === submission.type)
+      .sort((left, right) => Math.abs(new Date(left.createdAt).getTime() - submittedAt) - Math.abs(new Date(right.createdAt).getTime() - submittedAt))[0]
+
+    if (matchingGroup && Math.abs(new Date(matchingGroup.createdAt).getTime() - submittedAt) < 120000) {
+      matchingGroup.submittedFields = submission.submittedFields
+      matchingGroup.notes = submission.notes
+      matchingGroup.adminRemarks = submission.adminRemarks
+      continue
+    }
+
+    groups.push({
+      key: `service-${submission._id}`,
+      serviceType: submission.type || 'General',
+      createdAt: submission.createdAt,
+      documents: [],
+      submittedFields: submission.submittedFields,
+      notes: submission.notes,
+      adminRemarks: submission.adminRemarks,
+      status: submission.status,
+    })
+  }
+
   return groups
     .map((group) => ({
       ...group,
-      status: getGroupStatus(group.documents),
+      submittedFields: group.submittedFields || [],
+      status: group.documents.length ? getGroupStatus(group.documents) : group.status || 'pending',
     }))
     .sort((left, right) => new Date(right.createdAt || 0) - new Date(left.createdAt || 0))
 }
@@ -67,6 +94,7 @@ function groupDocumentsByServiceSession(documents) {
 function Documents() {
   const navigate = useNavigate()
   const [documents, setDocuments] = useState([])
+  const [serviceSubmissions, setServiceSubmissions] = useState([])
   const [services, setServices] = useState([])
   const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
@@ -83,6 +111,7 @@ function Documents() {
     ])
 
     setDocuments(documentsData.documents || [])
+    setServiceSubmissions(documentsData.serviceSubmissions || [])
     setServices(servicesData.services || [])
     setPayments(paymentsData.payments || [])
   }
@@ -119,13 +148,21 @@ function Documents() {
     return nextSummary
   }, [userSubmittedDocuments])
 
-  const historyGroups = useMemo(() => groupDocumentsByServiceSession(userSubmittedDocuments), [userSubmittedDocuments])
+  const historyGroups = useMemo(
+    () => groupDocumentsByServiceSession(userSubmittedDocuments, serviceSubmissions),
+    [serviceSubmissions, userSubmittedDocuments],
+  )
+
+  const documentsById = useMemo(
+    () => new Map(documents.map((document) => [document._id, document])),
+    [documents],
+  )
 
   const filteredHistoryGroups = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
     if (!query) return historyGroups
     return historyGroups.filter((group) =>
-      [group.serviceType, ...group.documents.flatMap((document) => [document.title, document.originalName, document.documentType])]
+      [group.serviceType, ...group.documents.flatMap((document) => [document.title, document.originalName, document.documentType]), ...group.submittedFields.flatMap((field) => [field.label, field.valueText])]
         .filter(Boolean)
         .join(' ')
         .toLowerCase()
@@ -232,6 +269,10 @@ function Documents() {
           <div className="list-stack">
             {filteredHistoryGroups.map((group) => {
               const isOpen = openGroupKey === group.key
+              const linkedDocumentIds = new Set(group.documents.map((document) => document._id))
+              const submittedItemCount = group.documents.length + group.submittedFields.filter(
+                (field) => !field.documentId || !linkedDocumentIds.has(field.documentId),
+              ).length
 
               return (
                 <article className="document-record" key={group.key}>
@@ -248,7 +289,7 @@ function Documents() {
                       <p>{formatDateTime(group.createdAt)}</p>
                     </div>
                     <div className="list-meta-group">
-                      <span>{group.documents.length} document(s)</span>
+                      <span>{submittedItemCount} submitted item(s)</span>
                       <span>{isOpen ? 'Hide details' : 'View details'}</span>
                     </div>
                   </button>
@@ -341,6 +382,15 @@ function Documents() {
                   })()}
                         </div>
                       ))}
+                      {group.submittedFields.length ? <section className="document-history-submitted-fields">
+                        <h4>Submitted details</h4>
+                        {group.submittedFields.map((field, index) => {
+                          const document = field.documentId ? documentsById.get(field.documentId) : null
+                          return <div key={`${group.key}-${field.label}-${index}`}><strong>{field.label}</strong>{document ? <span><Icon name="documentStack" /> {document.originalName || document.filename || 'Uploaded document'} {document.fileUrl ? <a href={document.fileUrl} rel="noreferrer" target="_blank">View</a> : null}</span> : <span>{field.valueText || '—'}</span>}</div>
+                        })}
+                        {group.notes ? <p className="document-remarks muted">Your note: {group.notes}</p> : null}
+                        {group.adminRemarks ? <p className="document-remarks">Admin remarks: {group.adminRemarks}</p> : null}
+                      </section> : null}
                     </div>
                   ) : null}
                 </article>
@@ -356,7 +406,7 @@ function Documents() {
       <section className="document-support-strip">
         <span><Icon name="headset" /></span>
         <div><strong>Need Help?</strong><p>If you face any issue while uploading or accessing documents, feel free to contact our support team.</p></div>
-        <a href="/contact">Contact Support <Icon name="arrowRight" /></a>
+        <Link to="/dashboard/contact">Contact Support <Icon name="arrowRight" /></Link>
       </section>
     </div>
   )

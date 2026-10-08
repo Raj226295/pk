@@ -649,6 +649,25 @@ function handle_admin_get_documents(PDO $db): void
         ),
     );
     $users = fetch_all($db, "SELECT * FROM users WHERE role = 'user' ORDER BY created_at DESC");
+    $influencerSubmissions = fetch_all(
+        $db,
+        'SELECT id, user_id, type, status, notes, admin_remarks, created_at
+         FROM services
+         WHERE influencer_id IS NOT NULL
+         ORDER BY created_at DESC',
+    );
+    foreach ($influencerSubmissions as &$submission) {
+        $submission['submitted_fields'] = fetch_all(
+            $db,
+            'SELECT r.label, r.field_type, v.value_text, v.document_id
+             FROM influencer_requirement_values v
+             JOIN influencer_requirements r ON r.id = v.influencer_requirement_id
+             WHERE v.service_id = :serviceId
+             ORDER BY r.sort_order ASC, r.label ASC',
+            [':serviceId' => $submission['id']],
+        );
+    }
+    unset($submission);
     $folderMap = [];
 
     foreach ($users as $user) {
@@ -692,6 +711,33 @@ function handle_admin_get_documents(PDO $db): void
         }
     }
 
+    $serializedInfluencerSubmissions = array_map(static fn (array $submission): array => [
+        '_id' => (string) $submission['id'],
+        'userId' => (string) $submission['user_id'],
+        'type' => (string) $submission['type'],
+        'status' => (string) ($submission['status'] ?? 'pending'),
+        'notes' => (string) ($submission['notes'] ?? ''),
+        'adminRemarks' => (string) ($submission['admin_remarks'] ?? ''),
+        'createdAt' => to_iso8601($submission['created_at'] ?? null),
+        'submittedFields' => array_map(static fn (array $field): array => [
+            'label' => (string) $field['label'],
+            'fieldType' => (string) $field['field_type'],
+            'valueText' => (string) ($field['value_text'] ?? ''),
+            'documentId' => $field['document_id'] !== null ? (string) $field['document_id'] : '',
+        ], $submission['submitted_fields']),
+    ], $influencerSubmissions);
+
+    foreach ($serializedInfluencerSubmissions as $submission) {
+        $ownerId = $submission['userId'];
+        if ($ownerId === '' || !isset($folderMap[$ownerId])) {
+            continue;
+        }
+
+        if ($folderMap[$ownerId]['lastSubmittedAt'] === null || strcmp((string) $submission['createdAt'], (string) $folderMap[$ownerId]['lastSubmittedAt']) > 0) {
+            $folderMap[$ownerId]['lastSubmittedAt'] = $submission['createdAt'];
+        }
+    }
+
     $folders = array_values($folderMap);
     usort($folders, static function (array $left, array $right): int {
         if (($left['lastSubmittedAt'] ?? null) === null && ($right['lastSubmittedAt'] ?? null) === null) {
@@ -708,6 +754,7 @@ function handle_admin_get_documents(PDO $db): void
 
     json_response([
         'documents' => $serializedDocuments,
+        'influencerSubmissions' => $serializedInfluencerSubmissions,
         'folders' => $folders,
     ]);
 }
@@ -864,14 +911,33 @@ function open_service_payment_if_documents_are_ready(PDO $db, string $userId, st
         ], 'id = :id', [':id' => $service['id']]);
     }
 
-    create_notification($db, [
-        'userId' => $userId,
-        'title' => 'Ready to pay',
-        'message' => $serviceType . ' documents are approved. Payment is now open in your dashboard.',
-        'category' => 'payment',
-        'link' => '/dashboard/payments',
-        'actionLabel' => 'Pay now',
-    ]);
+    $notificationTitle = 'Ready to pay';
+    $notificationMessage = $serviceType . ' documents are approved. Payment is now open in your dashboard.';
+    $existingNotification = fetch_one(
+        $db,
+        'SELECT id FROM notifications
+         WHERE user_id = :userId AND title = :title AND message = :message AND category = :category
+         LIMIT 1',
+        [
+            ':userId' => $userId,
+            ':title' => $notificationTitle,
+            ':message' => $notificationMessage,
+            ':category' => 'payment',
+        ],
+    );
+
+    // Dashboard reconciliation runs whenever a user profile loads. Only add
+    // this event once for a given service so page visits cannot spam messages.
+    if ($existingNotification === null) {
+        create_notification($db, [
+            'userId' => $userId,
+            'title' => $notificationTitle,
+            'message' => $notificationMessage,
+            'category' => 'payment',
+            'link' => '/dashboard/payments',
+            'actionLabel' => 'Pay now',
+        ]);
+    }
 }
 
 function reconcile_ready_services_for_user(PDO $db, string $userId): void

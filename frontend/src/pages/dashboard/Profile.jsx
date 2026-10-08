@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import UserAvatar from '../../components/common/UserAvatar.jsx'
 import api, { extractApiError } from '../../lib/api.js'
@@ -15,10 +15,12 @@ function Profile() {
   const { user, updateUser, logout } = useAuth()
   const navigate = useNavigate()
   const [profileImage, setProfileImage] = useState(null)
+  const profileImageInputRef = useRef(null)
   const [previewUrl, setPreviewUrl] = useState('')
   const [imageSettings, setImageSettings] = useState(defaultImageSettings)
   const [imageInputKey, setImageInputKey] = useState(0)
   const [imageSubmitting, setImageSubmitting] = useState(false)
+  const [profileSubmitting, setProfileSubmitting] = useState(false)
   const [profileForm, setProfileForm] = useState({
     name: '',
     email: '',
@@ -89,7 +91,21 @@ function Profile() {
   }
 
   const handleImageChange = (event) => {
-    setProfileImage(event.target.files?.[0] || null)
+    const nextImage = event.target.files?.[0] || null
+    if (nextImage && !['image/jpeg', 'image/png'].includes(nextImage.type)) {
+      event.target.value = ''
+      setProfileImage(null)
+      setStatus({ type: 'error', message: 'Please choose a JPG or PNG image.' })
+      return
+    }
+    if (nextImage && nextImage.size > 5 * 1024 * 1024) {
+      event.target.value = ''
+      setProfileImage(null)
+      setStatus({ type: 'error', message: 'The profile photo must be 5 MB or smaller.' })
+      return
+    }
+    setStatus({ type: '', message: '' })
+    setProfileImage(nextImage)
   }
 
   const handleImageSettingChange = (event) => {
@@ -107,28 +123,25 @@ function Profile() {
 
   const saveProfile = async (event) => {
     event.preventDefault()
+    if (profileSubmitting || imageSubmitting) return
+    setProfileSubmitting(true)
     setStatus({ type: '', message: '' })
 
     try {
       const { data } = await api.put('/api/user/profile', profileForm)
       updateUser(data.user)
+      if (profileImage) {
+        await persistProfileImage()
+      }
       setStatus({ type: 'success', message: 'Profile updated successfully.' })
     } catch (error) {
       setStatus({ type: 'error', message: extractApiError(error) })
+    } finally {
+      setProfileSubmitting(false)
     }
   }
 
-  const uploadProfileImage = async (event) => {
-    event.preventDefault()
-
-    if (!profileImage && !user?.profileImage) {
-      setStatus({ type: 'error', message: 'Please choose an image to upload.' })
-      return
-    }
-
-    setImageSubmitting(true)
-    setStatus({ type: '', message: '' })
-
+  const persistProfileImage = async () => {
     const payload = new FormData()
     if (profileImage) {
       payload.append('profileImage', profileImage)
@@ -137,15 +150,24 @@ function Profile() {
     payload.append('offsetX', String(imageSettings.offsetX))
     payload.append('offsetY', String(imageSettings.offsetY))
 
+    const { data } = await api.post('/api/user/profile/image?_method=PUT', payload)
+    updateUser(data.user)
+    setProfileImage(null)
+    setImageInputKey((current) => current + 1)
+  }
+
+  const uploadProfileImage = async (event) => {
+    event.preventDefault()
+    if (imageSubmitting || profileSubmitting) return
+    if (!profileImage && !user?.profileImage) {
+      setStatus({ type: 'error', message: 'Please choose an image to upload.' })
+      return
+    }
+    setImageSubmitting(true)
+    setStatus({ type: '', message: '' })
+
     try {
-      const { data } = await api.post('/api/user/profile/image?_method=PUT', payload, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      })
-      updateUser(data.user)
-      setProfileImage(null)
-      setImageInputKey((current) => current + 1)
+      await persistProfileImage()
       setStatus({ type: 'success', message: 'Profile image updated successfully.' })
     } catch (error) {
       setStatus({ type: 'error', message: extractApiError(error) })
@@ -196,12 +218,27 @@ function Profile() {
       </header>
 
       {status.message ? <p className={`form-message ${status.type}`}>{status.message}</p> : null}
+      {user?.needsProfileCompletion ? <p className="form-message success">Please add your phone number below to complete your Google account setup.</p> : null}
 
       <section className={isAdmin ? 'admin-profile-summary-grid' : undefined}>
       <section className="profile-summary-banner">
         <div className="profile-summary-avatar">
-          <UserAvatar alt={`${user?.name || 'User'} profile image`} className="profile-avatar-lg" user={user} />
-          <span><Icon name="camera" /></span>
+          <UserAvatar
+            alt={`${user?.name || 'User'} profile image`}
+            className="profile-avatar-lg"
+            imageUrl={previewUrl}
+            settings={imageSettings}
+            user={previewUrl ? { ...user, profileImage: '' } : user}
+          />
+          <button
+            aria-label="Choose a profile photo"
+            className="profile-avatar-camera-button"
+            onClick={() => profileImageInputRef.current?.click()}
+            disabled={imageSubmitting || profileSubmitting}
+            type="button"
+          >
+            <Icon name="camera" />
+          </button>
         </div>
         <div className="profile-summary-copy">
           <div><h2>{user?.name || 'User'}</h2><span>{isAdmin ? 'Administrator Account' : 'Client Account'}</span></div>
@@ -235,10 +272,12 @@ function Profile() {
               <small>JPG, PNG (Max 5MB)</small>
               <span>Choose File</span>
               <input
-                accept="image/*"
+                accept="image/jpeg,image/png"
+                disabled={imageSubmitting || profileSubmitting}
                 key={imageInputKey}
                 name="profileImage"
                 onChange={handleImageChange}
+                ref={profileImageInputRef}
                 type="file"
               />
             </label>
@@ -296,7 +335,7 @@ function Profile() {
               <button className="button button-ghost" onClick={resetImageSettings} type="button">
                 <Icon name="refresh" /> Reset
               </button>
-              <button className="button button-secondary" disabled={imageSubmitting} type="submit">
+              <button className="button button-secondary" disabled={imageSubmitting || profileSubmitting} type="submit">
                 <Icon name="fileCheck" /> {imageSubmitting ? 'Saving...' : 'Save Photo'}
               </button>
             </div>
@@ -321,7 +360,7 @@ function Profile() {
             Company Name
             <span><Icon name="building" /><input name="companyName" onChange={handleProfileChange} placeholder="Enter your company name" type="text" value={profileForm.companyName} /></span>
           </label>
-          <button className="profile-primary-button" type="submit"><Icon name="fileCheck" />Save Changes</button>
+          <button className="profile-primary-button" disabled={profileSubmitting || imageSubmitting} type="submit"><Icon name="fileCheck" />{profileSubmitting ? 'Saving...' : 'Save Changes'}</button>
         </form>
       </section>
 
@@ -355,9 +394,15 @@ function Profile() {
       </form>
 
       <article className="profile-section-card profile-security-card">
-        <header><span><Icon name="shield" /></span><div><h3>Account Security</h3><p>Manage your account security preferences.</p></div></header>
         {isAdmin ? <div className="admin-two-factor-row"><span><Icon name="lock" /></span><section><strong>Two-Factor Authentication</strong><small>Add an extra layer of security to your account.</small></section><button aria-label="Two-factor authentication is not configured" className="admin-profile-toggle" disabled type="button"><i /></button></div> : null}
-        <div><span><Icon name="logout" /></span><section><strong>Logout from this device</strong><small>Use this option if you are on a shared device after finishing your work.</small></section><button onClick={handleLogout} type="button"><Icon name="logout" />Logout</button></div>
+        <div className="profile-logout-row">
+          <span><Icon name="logout" /></span>
+          <section>
+            <strong>Sign out of your account</strong>
+            <small>You can sign in again at any time.</small>
+          </section>
+          <button className="profile-logout-button" onClick={handleLogout} type="button">Logout</button>
+        </div>
       </article>
       </section>
       {isAdmin ? <aside className="admin-profile-tip"><i>💡</i><div><strong>Tip</strong><span>Keep your profile information up to date to ensure smooth communication and better account security.</span></div></aside> : null}

@@ -1,0 +1,30 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+!.env.hostinger.example
+
+# Firebase / credentials
+backend/credentials/
+*.json
+
+# Logs
+*.log
+
+# PHP dependencies
+backend/vendor/
+
+# Frontend dependencies
+frontend/node_modules/
+
+# Vite cache
+frontend/node_modules/.vite/
+
+# Build output
+frontend/dist/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

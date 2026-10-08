@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import api from '../lib/api.js'
+import { getGoogleIdToken, signOutFromFirebase } from '../lib/firebase.js'
 
 const AuthContext = createContext(null)
 
@@ -93,8 +94,22 @@ export function AuthProvider({ children }) {
     return data.user
   }
 
+  const googleLogin = async () => {
+    const idToken = await getGoogleIdToken()
+
+    try {
+      const { data } = await api.post('/api/auth/google', { idToken })
+      persistSession(data.token, data.user)
+      return data.user
+    } catch (error) {
+      await signOutFromFirebase().catch(() => {})
+      throw error
+    }
+  }
+
   const logout = () => {
     clearSession()
+    signOutFromFirebase().catch(() => {})
   }
 
   const updateUser = (nextUser) => {
@@ -109,6 +124,7 @@ export function AuthProvider({ children }) {
         token,
         user,
         createLocalServiceSession,
+        googleLogin,
         login,
         logout,
         refreshProfile,

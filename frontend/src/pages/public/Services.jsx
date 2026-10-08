@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Icon } from './Home.jsx'
 import { useServiceRequest } from '../../context/ServiceRequestContext.jsx'
+import Loader from '../../components/common/Loader.jsx'
 import gstDocumentIcon from '../../assets/service-category-icons/gst-document.png'
 import taxCalculatorIcon from '../../assets/service-category-icons/tax-calculator.png'
 import accountingIcon from '../../assets/service-category-icons/accounting.png'
@@ -211,6 +212,7 @@ function ServiceProcess({ groupId }) {
 
 function Services() {
   const { requestService } = useServiceRequest()
+  const [loading, setLoading] = useState(true)
   const [searchParams] = useSearchParams()
   const requestedCategory = searchParams.get('category')
   const isKnownCategory = (category) => serviceGroups.some((group) => group.id === category)
@@ -221,6 +223,15 @@ function Services() {
   useEffect(() => {
     if (isKnownCategory(requestedCategory)) setActiveId(requestedCategory)
   }, [requestedCategory])
+
+  useEffect(() => {
+    const loaderTimer = window.setTimeout(() => setLoading(false), 250)
+    return () => window.clearTimeout(loaderTimer)
+  }, [])
+
+  if (loading) {
+    return <Loader fullScreen message="Loading services..." />
+  }
 
   const selectCategory = (groupId) => {
     setActiveId(groupId)

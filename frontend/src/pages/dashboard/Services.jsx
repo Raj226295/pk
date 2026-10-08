@@ -9,7 +9,9 @@ import { resolveUploadUrl } from '../../lib/uploads.js'
 import { Icon } from '../public/Home.jsx'
 import ServiceCatalogCard from '../../components/common/ServiceCatalogCard.jsx'
 import { serviceGroups } from '../public/Services.jsx'
-import { directServices, InfluencerMarketplace, influencers, webPackages } from '../public/MarketingWebApps.jsx'
+import { directServices, InfluencerMarketplace, webPackages } from '../public/MarketingWebApps.jsx'
+import { useServiceRequest } from '../../context/ServiceRequestContext.jsx'
+import comingSoonIllustration from '../../assets/coming-soon-illustration.png'
 
 const visibleServiceStatuses = ['pending', 'approved', 'rejected', 'in progress', 'completed']
 
@@ -18,6 +20,27 @@ const serviceCategories = [
   { id: 'marketing', label: 'Marketing', icon: 'megaphone' },
   { id: 'influencer', label: 'Influencers', icon: 'sparkle' },
   { id: 'web', label: 'Web & Apps', icon: 'code' },
+]
+
+const mainServiceByCategory = {
+  tax: 'tax-service',
+  marketing: 'marketing',
+  influencer: 'influencers',
+  web: 'web-apps',
+}
+
+const mainServiceLabels = {
+  'tax-service': 'Tax Services',
+  marketing: 'Marketing',
+  influencers: 'Influencer Marketing',
+  'web-apps': 'Web & Apps',
+}
+
+const comingSoonHighlights = [
+  ['sparkle', 'Better Experience', 'A smoother, more useful service experience for you.'],
+  ['shield', 'New Features', 'Helpful tools and expert support are on the way.'],
+  ['star', 'More Opportunities', 'More ways to help your business grow with confidence.'],
+  ['award', 'Same Trust', 'The trusted support you know, delivered even better.'],
 ]
 
 function getServiceCategory(service) {
@@ -84,18 +107,6 @@ const localServiceCatalog = [
     priceLabel: 'Quote after consultation',
     documentType: name,
     category: 'marketing',
-  })),
-  ...influencers.map((creator) => ({
-    _id: `influencer-${creator.index}`,
-    name: creator.name,
-    description: `${creator.platform} creator in ${creator.category} with ${creator.followers} followers and ${creator.engagement} engagement.`,
-    icon: creator.platform === 'Instagram' ? 'instagram' : 'youtube',
-    tone: 'royal',
-    tags: [creator.category, creator.platform, creator.location],
-    price: Number(String(creator.price).replace(/,/g, '')),
-    priceLabel: `₹${creator.price}`,
-    documentType: `Influencer Booking — ${creator.name}`,
-    category: 'influencer',
   })),
   ...webPackages.map((service, index) => ({
     _id: `web-${index}`,
@@ -220,13 +231,16 @@ function Services() {
   )
   const [activeTaxGroup, setActiveTaxGroup] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [inactiveService, setInactiveService] = useState('')
   const navigate = useNavigate()
+  const { ensureServiceAvailable } = useServiceRequest()
 
   useEffect(() => {
     if (serviceCategories.some((category) => category.id === requestedCategory)) {
       setActiveCategory(requestedCategory)
       setActiveTaxGroup(null)
       setSearchQuery('')
+      setInactiveService('')
     }
   }, [requestedCategory])
 
@@ -303,6 +317,20 @@ function Services() {
     navigate(buildUploadDocumentsUrl(service))
   }
 
+  const handleCatalogSelection = async (service) => {
+    const mainService = mainServiceByCategory[service.category] || 'tax-service'
+    if (!await ensureServiceAvailable(mainService, { redirectToComingSoon: false })) {
+      setInactiveService(mainService)
+      return
+    }
+    setInactiveService('')
+    if (service.isTaxGroup) {
+      setActiveTaxGroup(service.groupId)
+      return
+    }
+    handleOpenUploadDocuments(service)
+  }
+
   const handleProceedToPayment = (service) => {
     navigate('/dashboard/payments', {
       state: {
@@ -311,11 +339,12 @@ function Services() {
     })
   }
 
-  const handleInfluencerBooking = (creator) => {
-    handleOpenUploadDocuments({
-      name: `Influencer Booking — ${creator.name}`,
-      documentType: `Influencer Booking — ${creator.name}`,
-    })
+  const handleInfluencerBooking = async (creator) => {
+    if (!await ensureServiceAvailable('influencers', { redirectToComingSoon: false })) {
+      setInactiveService('influencers')
+      return
+    }
+    navigate(`/dashboard/service-request?influencer=${encodeURIComponent(creator.id)}`)
   }
 
   return (
@@ -338,6 +367,7 @@ function Services() {
               setActiveCategory(category.id)
               setActiveTaxGroup(null)
               setSearchQuery('')
+              setInactiveService('')
             }}
             type="button"
           >
@@ -347,7 +377,20 @@ function Services() {
         ))}
       </section>
 
-      {activeCategory === 'influencer' ? (
+      {inactiveService ? (
+        <section className="dashboard-service-coming-soon" aria-live="polite">
+          <header>
+            <h1>Coming <em>Soon</em></h1>
+            <h2>{mainServiceLabels[inactiveService] || 'This service'} is getting something amazing.</h2>
+            <p>We’re working behind the scenes to bring you a better experience. Stay tuned for exciting updates.</p>
+          </header>
+          <img className="dashboard-coming-soon-art" src={comingSoonIllustration} alt="PK Business Solutions page under development" />
+          <div className="dashboard-coming-soon-actions">
+            <button className="button button-ghost" onClick={() => setInactiveService('')} type="button">Browse other services</button>
+          </div>
+          <div className="dashboard-coming-soon-highlights">{comingSoonHighlights.map(([icon, title, description], index) => <article className={`highlight-${index + 1}`} key={title}><i><Icon name={icon} /></i><h3>{title}</h3><p>{description}</p></article>)}</div>
+        </section>
+      ) : activeCategory === 'influencer' ? (
         <section className="dashboard-influencer-marketplace" aria-label="Influencer marketplace">
           <InfluencerMarketplace onBook={handleInfluencerBooking} />
         </section>
@@ -397,7 +440,7 @@ function Services() {
                 actionLabel={service.isTaxGroup ? 'View all services' : 'Upload documents'}
                 className={service.isTaxGroup ? 'tax-group-card' : ''}
                 key={service._id}
-                onClick={() => service.isTaxGroup ? setActiveTaxGroup(service.groupId) : handleOpenUploadDocuments(service)}
+                onClick={() => handleCatalogSelection(service)}
                 service={{ ...service, description: service.description || service.guide?.summary, tags: service.isTaxGroup ? service.featureItems : service.tags }}
               />
             ))}
@@ -411,7 +454,7 @@ function Services() {
         {filteredServices.length ? filteredServices.map((service) => (
           <MobileServiceCard
             key={service._id}
-            onSelect={() => service.isTaxGroup ? setActiveTaxGroup(service.groupId) : handleOpenUploadDocuments(service)}
+            onSelect={() => handleCatalogSelection(service)}
             service={service}
           />
         )) : <EmptyState description="Choose another category to view available services." title="No matching services" />}
@@ -419,7 +462,7 @@ function Services() {
         <aside className="mobile-services-support">
           <span><Icon name="headset" /></span>
           <div><small>Need help?</small><strong>Our support team is here.</strong></div>
-          <button onClick={() => navigate('/contact')} type="button">Contact Support</button>
+          <button onClick={() => navigate('/dashboard/contact')} type="button">Contact Support</button>
         </aside>
       </section>
 

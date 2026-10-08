@@ -80,6 +80,74 @@ function handle_login(PDO $db): void
     ]);
 }
 
+function handle_google_login(PDO $db): void
+{
+    $data = request_data();
+    $idToken = safe_trim($data['idToken'] ?? '');
+
+    if ($idToken === '') {
+        throw new AppError(400, 'Google sign-in token is required');
+    }
+
+    $identity = verify_firebase_google_id_token($idToken);
+    $user = fetch_one($db, 'SELECT * FROM users WHERE firebase_uid = :firebaseUid LIMIT 1', [':firebaseUid' => $identity['uid']]);
+
+    if ($user === null) {
+        $user = fetch_one($db, 'SELECT * FROM users WHERE email = :email LIMIT 1', [':email' => $identity['email']]);
+
+        if ($user !== null) {
+            if (($user['role'] ?? 'user') === 'admin') {
+                throw new AppError(403, 'Google sign-in is not enabled for administrator accounts');
+            }
+
+            update_row($db, 'users', [
+                'firebase_uid' => $identity['uid'],
+                'updated_at' => now_db(),
+            ], 'id = :id', [':id' => $user['id']]);
+            $user = fetch_one($db, 'SELECT * FROM users WHERE id = :id LIMIT 1', [':id' => $user['id']]);
+        } else {
+            $now = now_db();
+            $userId = uuid_v4();
+            $name = $identity['name'] !== '' ? $identity['name'] : strstr($identity['email'], '@', true);
+
+            insert_row($db, 'users', [
+                'id' => $userId,
+                'name' => $name ?: 'Google user',
+                'email' => $identity['email'],
+                'phone' => '',
+                'company_name' => '',
+                'profile_image' => '',
+                'profile_image_zoom' => 1,
+                'profile_image_offset_x' => 0,
+                'profile_image_offset_y' => 0,
+                'is_blocked' => 0,
+                'blocked_at' => null,
+                'password_hash' => password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT),
+                'firebase_uid' => $identity['uid'],
+                'role' => 'user',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+
+            $user = fetch_one($db, 'SELECT * FROM users WHERE id = :id LIMIT 1', [':id' => $userId]);
+            ensure_client_document_folder($user ?? ['id' => $userId, 'name' => $name ?: 'Google user', 'email' => $identity['email']]);
+        }
+    }
+
+    if ($user === null) {
+        throw new AppError(500, 'Unable to create your account');
+    }
+
+    if ((int) ($user['is_blocked'] ?? 0) === 1) {
+        throw new AppError(403, 'This account has been blocked. Please contact support.');
+    }
+
+    json_response([
+        'token' => issue_token((string) $user['id']),
+        'user' => serialize_user_record($user),
+    ]);
+}
+
 function handle_get_blogs(PDO $db): void
 {
     $blogs = fetch_all($db, 'SELECT * FROM blogs ORDER BY published_at DESC, created_at DESC');
@@ -146,6 +214,12 @@ function handle_update_profile(PDO $db): void
     $current = current_user($db);
     $data = request_data();
     $email = strtolower(safe_trim($data['email'] ?? $current['email'], (string) $current['email']));
+    $name = safe_trim($data['name'] ?? $current['name'], (string) $current['name']);
+    $phone = safe_trim($data['phone'] ?? $current['phone'], (string) $current['phone']);
+
+    if ($name === '' || $email === '' || $phone === '') {
+        throw new AppError(400, 'Name, email, and phone number are required');
+    }
 
     if ($email !== strtolower((string) $current['email'])) {
         $existing = fetch_one(
@@ -160,9 +234,9 @@ function handle_update_profile(PDO $db): void
     }
 
     update_row($db, 'users', [
-        'name' => safe_trim($data['name'] ?? $current['name'], (string) $current['name']),
+        'name' => $name,
         'email' => $email,
-        'phone' => safe_trim($data['phone'] ?? $current['phone'], (string) $current['phone']),
+        'phone' => $phone,
         'company_name' => safe_trim($data['companyName'] ?? $current['company_name'], (string) ($current['company_name'] ?? '')),
         'updated_at' => now_db(),
     ], 'id = :id', [':id' => $current['id']]);
@@ -470,8 +544,54 @@ function handle_get_user_documents(PDO $db): void
         [':userId' => $user['id']],
     );
 
+    $serviceSubmissions = fetch_all(
+        $db,
+        'SELECT id, type, description, status, notes, admin_remarks, created_at FROM services WHERE user_id = :userId ORDER BY created_at DESC',
+        [':userId' => $user['id']],
+    );
+    foreach ($serviceSubmissions as &$service) {
+        $service['submitted_fields'] = fetch_all(
+            $db,
+            'SELECT r.label, r.field_type, v.value_text, v.document_id
+             FROM service_requirement_values v
+             JOIN service_requirements r ON r.id = v.requirement_id
+             WHERE v.service_id = :serviceId
+             ORDER BY r.sort_order ASC, r.label ASC',
+            [':serviceId' => $service['id']],
+        );
+
+        // Influencer bookings use their own configurable requirement tables.  Merge
+        // those answers into the same submission shape so the document history can
+        // show phone numbers, links, and other non-file booking details too.
+        $service['submitted_fields'] = array_merge($service['submitted_fields'], fetch_all(
+            $db,
+            'SELECT r.label, r.field_type, v.value_text, v.document_id
+             FROM influencer_requirement_values v
+             JOIN influencer_requirements r ON r.id = v.influencer_requirement_id
+             WHERE v.service_id = :serviceId
+             ORDER BY r.sort_order ASC, r.label ASC',
+            [':serviceId' => $service['id']],
+        ));
+    }
+    unset($service);
+
     json_response([
         'documents' => array_map(static fn ($document) => serialize_document_record($document, 'user'), $documents),
+        'serviceSubmissions' => array_map(static fn (array $service): array => [
+            '_id' => (string) $service['id'],
+            'type' => (string) $service['type'],
+            'description' => (string) ($service['description'] ?? ''),
+            'status' => (string) ($service['status'] ?? 'pending'),
+            'notes' => (string) ($service['notes'] ?? ''),
+            'adminRemarks' => (string) ($service['admin_remarks'] ?? ''),
+            'createdAt' => to_iso8601($service['created_at'] ?? null),
+            'submittedFields' => array_map(static fn (array $field): array => [
+                'label' => (string) $field['label'],
+                'fieldType' => (string) $field['field_type'],
+                'valueText' => (string) ($field['value_text'] ?? ''),
+                'documentId' => $field['document_id'] !== null ? (string) $field['document_id'] : '',
+            ], $service['submitted_fields']),
+        ], $serviceSubmissions),
     ]);
 }
 
@@ -1173,6 +1293,24 @@ function handle_get_notifications(PDO $db): void
         'SELECT * FROM notifications WHERE user_id = :userId ORDER BY created_at DESC',
         [':userId' => $user['id']],
     );
+
+    // Older versions added this reconciliation message on each dashboard
+    // visit. Return only its newest copy so historic duplicates no longer
+    // clutter the Messages page.
+    $seenReadyToPay = [];
+    $notifications = array_values(array_filter($notifications, static function (array $notification) use (&$seenReadyToPay): bool {
+        if (($notification['title'] ?? '') !== 'Ready to pay' || ($notification['category'] ?? '') !== 'payment') {
+            return true;
+        }
+
+        $key = (string) ($notification['message'] ?? '');
+        if (isset($seenReadyToPay[$key])) {
+            return false;
+        }
+
+        $seenReadyToPay[$key] = true;
+        return true;
+    }));
 
     json_response(['notifications' => array_map('serialize_notification_record', $notifications)]);
 }

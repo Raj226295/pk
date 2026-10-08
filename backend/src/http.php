@@ -14,7 +14,14 @@ final class AppError extends RuntimeException
 
 function apply_common_headers(): void
 {
-    header('Access-Control-Allow-Origin: ' . env_value('APP_CORS_ORIGIN', '*'));
+    $configuredOrigins = array_filter(array_map('trim', explode(',', (string) env_value('APP_CORS_ORIGIN', ''))));
+    $origin = (string) ($_SERVER['HTTP_ORIGIN'] ?? '');
+
+    // A credential-bearing admin API must never reflect arbitrary browser origins.
+    if ($origin !== '' && in_array($origin, $configuredOrigins, true)) {
+        header('Access-Control-Allow-Origin: ' . $origin);
+        header('Vary: Origin');
+    }
     header('Access-Control-Allow-Headers: Content-Type, Authorization');
     header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
 }
@@ -37,7 +44,17 @@ function request_method(): string
 function request_path(): string
 {
     $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
-    return rtrim($path === '' ? '/' : $path, '/') ?: '/';
+    $path = rtrim($path === '' ? '/' : $path, '/') ?: '/';
+
+    // When the application is served from a subdirectory (for example
+    // http://localhost/pk), Apache forwards /pk/api/... to this entry point.
+    // Routes are defined from /api onward, so discard that install prefix.
+    $apiOffset = strpos($path, '/api/');
+    if ($apiOffset !== false) {
+        return substr($path, $apiOffset);
+    }
+
+    return $path;
 }
 
 function route_match(string $path, string $pattern): ?array

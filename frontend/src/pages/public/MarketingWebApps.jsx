@@ -1,9 +1,13 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { Icon } from './Home.jsx'
-import influencerPortraits from '../../assets/influencer-portraits-grid.png'
+import api from '../../lib/api.js'
+import { resolveUploadUrl } from '../../lib/uploads.js'
 import webGrowthDashboard from '../../assets/web-growth-dashboard.png'
+import instagramPlatformIcon from '../../assets/instagram-platform.png'
+import youtubePlatformIcon from '../../assets/youtube-platform.png'
 import { useServiceRequest } from '../../context/ServiceRequestContext.jsx'
+import Loader from '../../components/common/Loader.jsx'
 
 const marketingOfferings = [
   {
@@ -41,77 +45,54 @@ const webAppOfferings = [
   },
 ]
 
-const influencerOfferings = [
-  { number: '01', title: 'Influencer Discovery', copy: 'Find relevant and verified creators based on your audience, platform, niche and campaign goals.' },
-  { number: '02', title: 'Campaign Management', copy: 'From creator outreach and commercials to briefs and deliverables, we coordinate the complete campaign.' },
-  { number: '03', title: 'Performance Tracking', copy: 'Track campaign reach, engagement and conversions with clear reporting and practical insights.' },
-]
-
-export const influencers = [
-  ['Ananya Sharma','@ananya_style','Fashion & Lifestyle','Instagram','439K','8.3%','Mumbai','25,000'],
-  ['Rohan Malhotra','@tech.rohan','Tech & Gadgets','YouTube','326K','3.2%','Bengaluru','45,000'],
-  ['Priya Verma','@priya_verma','Finance & Wealth','Instagram','530K','7.4%','Delhi','30,000'],
-  ['Arjun Mehta','@arjuntrip','Food & Travel','YouTube','628K','9.3%','Hyderabad','35,000'],
-  ['Kedar Anand','@kedarontheroad','Travel','Instagram','2.2M','4.6%','Pune','50,000'],
-  ['Sneha Kulkarni','@snehafit','Fitness & Health','Instagram','389K','5.2%','Mumbai','35,000'],
-  ['Vikram Singh','@vikramtech','Tech & Gadgets','YouTube','891K','4.4%','Jaipur','22,000'],
-  ['Ishita Rao','@ishita_beauty','Fashion & Lifestyle','Instagram','2.3M','6.3%','Delhi NCR','55,000'],
-  ['Neha Joshi','@nehajoshi.style','Fashion & Lifestyle','Instagram','431K','3.4%','Ahmedabad','18,000'],
-  ['Dev Patel','@dev_gaming','Gaming','YouTube','426K','7.7%','Surat','28,000'],
-  ['Tara Shah','@tara_travel','Food & Travel','Instagram','738K','3.3%','Goa','40,000'],
-  ['Kabir Khanna','@kabirfinance','Finance & Wealth','YouTube','612K','5.8%','Gurugram','42,000'],
-].map(([name,handle,category,platform,followers,engagement,location,price],index)=>({name,handle,category,platform,followers,engagement,location,price,index}))
-
-const influencerCategories = ['All','Fashion & Lifestyle','Tech & Gadgets','Finance & Wealth','Food & Travel','Fitness & Health','Gaming']
-const influencerCategoryIcons = {
-  All:'grid', 'Fashion & Lifestyle':'fashion', 'Tech & Gadgets':'phone',
-  'Finance & Wealth':'wallet', 'Food & Travel':'utensils',
-  'Fitness & Health':'dumbbell', Gaming:'gamepad',
-}
+const platformIcon = (platform) => platform === 'Instagram' ? instagramPlatformIcon : youtubePlatformIcon
 
 export function InfluencerMarketplace({ onBook }) {
   const [query,setQuery] = useState('')
   const [category,setCategory] = useState('All')
   const [platform,setPlatform] = useState('All Platforms')
-  const visibleCreators = influencers.filter((creator) => {
+  const [creators, setCreators] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [loadFailed, setLoadFailed] = useState(false)
+  useEffect(() => { let mounted = true; api.get('/api/public/influencers').then(({ data }) => { if (mounted) setCreators((data.influencers || []).map((item, index) => ({ ...item, handle: item.username, category: item.niche, price: Number(item.booking_price || 0).toLocaleString('en-IN'), index }))) }).catch(() => { if (mounted) setLoadFailed(true) }).finally(() => { if (mounted) setLoading(false) }); return () => { mounted = false } }, [])
+  const availableCategories = [...new Set(creators.map((creator) => creator.category).filter(Boolean))]
+  const visibleCreators = creators.filter((creator) => {
     const matchesQuery = `${creator.name} ${creator.handle} ${creator.category}`.toLowerCase().includes(query.toLowerCase())
     return matchesQuery && (category === 'All' || creator.category === category) && (platform === 'All Platforms' || creator.platform === platform)
   })
-  const campaignServices = [
-    ['megaphone','Brand Promotion','End-to-end influencer campaigns with creative strategy and execution.'],
-    ['users','Product Reviews','Authentic reviews that build trust and strengthen purchase intent.'],
-    ['verified','Celebrity Promotions','High-impact endorsements that amplify your brand message.'],
-    ['mapPin','Local Influencer Drives','Hyperlocal campaigns that improve visibility and sales in your area.'],
-  ]
-
   const bookCreator = (creator) => onBook(creator)
 
-  return <div className="influencer-marketplace">
-    <header className="influencer-hero"><span>Creator Marketplace</span><h1>Find the right voice for your brand</h1><p>Discover verified creators, compare real audience metrics and launch campaigns with confidence.</p></header>
+  if (loading) return <Loader fullScreen message="Loading influencers..." />
 
+  return <div className="influencer-marketplace">
     <section className="influencer-filter-panel" aria-label="Influencer filters">
       <label className="influencer-search"><Icon name="search"/><input aria-label="Search influencers" placeholder="Search influencers by name, handle or niche..." value={query} onChange={(event)=>setQuery(event.target.value)}/></label>
       <select aria-label="Filter by platform" value={platform} onChange={(event)=>setPlatform(event.target.value)}><option>All Platforms</option><option>Instagram</option><option>YouTube</option></select>
       <select aria-label="Filter by followers"><option>Any Followers</option><option>Under 500K</option><option>500K – 1M</option><option>1M+</option></select>
       <select aria-label="Filter by engagement"><option>Any Engagement</option><option>3%+</option><option>5%+</option><option>8%+</option></select>
-      <div className="influencer-category-pills">{influencerCategories.map((item)=><button className={category===item?'active':''} key={item} onClick={()=>setCategory(item)} type="button"><Icon name={influencerCategoryIcons[item]}/>{item}</button>)}</div>
+      <div className="influencer-category-pills">{['All', ...availableCategories].map((item)=><button className={category===item?'active':''} key={item} onClick={()=>setCategory(item)} type="button"><Icon name="grid"/>{item}</button>)}</div>
     </section>
 
     <section className="influencer-results">
-      <div className="influencer-results-heading"><h2><Icon name="users"/>{visibleCreators.length} Creators match your filters</h2><button onClick={()=>{setQuery('');setCategory('All');setPlatform('All Platforms')}} type="button">View All Influencers <span>→</span></button></div>
-      {visibleCreators.length ? <div className="influencer-card-grid">{visibleCreators.map((creator)=><article className="influencer-card" key={creator.handle} onClick={()=>bookCreator(creator)} onKeyDown={(event)=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();bookCreator(creator)}}} role="button" tabIndex="0">
-        <div className={`influencer-photo influencer-photo-${creator.index}`} style={{backgroundImage:`url(${influencerPortraits})`}}><span><Icon name={creator.platform==='Instagram'?'instagram':'youtube'}/>{creator.category}</span></div>
-        <div className="influencer-card-body"><h3>{creator.name}<b title="Verified creator"><Icon name="verified"/></b></h3><p><Icon name={creator.platform==='Instagram'?'instagram':'youtube'}/>{creator.handle}</p><div className="influencer-metrics"><div><Icon name="users"/><strong>{creator.followers}</strong><small>Followers</small></div><div><Icon name="growthChart"/><strong>{creator.engagement}</strong><small>Engagement</small></div><div><Icon name="mapPin"/><strong>{creator.location}</strong><small>Location</small></div></div><footer><strong>₹{creator.price}</strong><button onClick={(event)=>{event.stopPropagation();bookCreator(creator)}} type="button">Book Now</button></footer></div>
-      </article>)}</div> : <div className="influencer-empty"><Icon name="search"/><h3>No creators found</h3><p>Try another name, niche or platform.</p></div>}
+      <div className="influencer-results-heading"><h2><Icon name="users"/>{`${visibleCreators.length} Creators match your filters`}</h2></div>
+      {visibleCreators.length ? <div className="influencer-card-grid">{visibleCreators.map((creator)=><article className="influencer-card" key={creator.id} onClick={()=>bookCreator(creator)} onKeyDown={(event)=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();bookCreator(creator)}}} role="button" tabIndex="0">
+        <div className="influencer-photo" style={creator.image ? { backgroundImage: `url(${resolveUploadUrl(creator.image)})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}><span><img alt="" className="influencer-platform-icon" src={platformIcon(creator.platform)} />{creator.category}</span></div>
+        <div className="influencer-card-body"><h3>{creator.name}<b title="Verified creator"><Icon name="verified"/></b></h3><p><img alt="" className="influencer-platform-icon" src={platformIcon(creator.platform)} />{creator.handle}</p><div className="influencer-metrics"><div><Icon name="users"/><strong>{creator.followers}</strong><small>Followers</small></div><div><Icon name="growthChart"/><strong>{creator.engagement}</strong><small>Engagement</small></div><div><Icon name="mapPin"/><strong>{creator.location}</strong><small>Location</small></div></div><footer><strong>₹{creator.price}</strong><button onClick={(event)=>{event.stopPropagation();bookCreator(creator)}} type="button">Book Now</button></footer></div>
+      </article>)}</div> : <div className="influencer-empty"><Icon name="search"/><h3>{loadFailed ? 'Creators are unavailable right now' : 'No creators found'}</h3><p>{loadFailed ? 'Please try again shortly.' : 'Try another name, niche or platform.'}</p></div>}
     </section>
 
-    <section className="influencer-campaigns"><header><span>Full-Funnel Campaigns</span><h2>More than bookings — complete campaign management</h2><p>From brand promotions to product reviews, we handle everything with a data-driven approach.</p></header><div>{campaignServices.map(([icon,title,copy])=><article key={title}><i><Icon name={icon}/></i><section><h3>{title}</h3><p>{copy}</p></section></article>)}</div></section>
   </div>
 }
 
 function InfluencerPage() {
-  const navigate = useNavigate()
-  const bookCreator = () => navigate('/login')
+  const { requestService } = useServiceRequest()
+  const bookCreator = (creator) => requestService({
+    title: 'Influencer Booking',
+    description: `Create your account to continue booking ${creator.name}.`,
+    icon: 'users',
+    influencerId: creator.id,
+    influencerName: creator.name,
+  }, 'influencers')
 
   return <InfluencerMarketplace onBook={bookCreator} />
 }
@@ -132,31 +113,54 @@ export const directServices = [
   ['Lead Generation','Landing pages, advertisements and conversion pipelines for predictable lead flow.','layers'],
 ]
 
+function useDirectServiceNodes(rootSlug) {
+  const [state, setState] = useState({ services: [], loading: true, failed: false })
+
+  useEffect(() => {
+    let current = true
+    api.get('/api/public/service-display-tree')
+      .then(({ data }) => {
+        const root = (data.services || []).find((service) => service.slug === rootSlug)
+        if (current) setState({ services: root?.children || [], loading: false, failed: false })
+      })
+      .catch(() => { if (current) setState({ services: [], loading: false, failed: true }) })
+    return () => { current = false }
+  }, [rootSlug])
+
+  return state
+}
+
 function WebAppsPage() {
   const { requestService } = useServiceRequest()
+  const { services: packageNodes, loading, failed } = useDirectServiceNodes('web-apps')
+  const packages = packageNodes.map((item) => ({ id: item.id, title: item.name, copy: item.description, price: Number(item.price || 0).toLocaleString('en-IN'), icon: item.metadata?.icon || 'code', features: item.metadata?.features || [] }))
   const growthPoints = [
     ['speedometer','90+ Page Speed Score','Clean code and optimized builds for Google and a better user experience.'],
     ['seo','SEO-Ready Structure','Schema, sitemaps, meta tags and clean URLs out of the box.'],
     ['growthChart','Lead Capture Built-in','Forms, WhatsApp, live chat and CRM hooks wired into every page.'],
     ['network','CRM & IT Solutions','Custom dashboards, automation and integrations for your operations.'],
   ]
+  if (loading) return <Loader fullScreen message="Loading web & apps..." />
   return <div className="web-apps-page">
-    <section className="web-packages container"><header><span>Packages</span><h1>Transparent pricing, premium delivery</h1><p>Fixed-scope packages with clear timelines.<br/>Custom builds are quoted after a free discovery call.</p></header><div className="web-package-grid">{webPackages.map((item)=><article className="web-package-card" key={item.title} onClick={()=>requestService({ title:item.title, description:item.copy, icon:item.icon, price:item.price })} onKeyDown={(event)=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();requestService({ title:item.title, description:item.copy, icon:item.icon, price:item.price })}}} role="button" tabIndex="0"><i><Icon name={item.icon}/></i><h2>{item.title}</h2><div className="web-package-price"><strong>₹{item.price}</strong><small>onwards</small></div><b aria-hidden="true"/><p>{item.copy}</p><ul>{item.features.map((feature)=><li key={feature}><span>✓</span>{feature}</li>)}</ul><Link onClick={(event)=>requestService({ title:item.title, description:item.copy, icon:item.icon, price:item.price }) && event.preventDefault()} to="/contact">Get Started</Link></article>)}</div></section>
+    <section className="web-packages container"><header><span>Packages</span><h1>Transparent pricing, premium delivery</h1><p>Fixed-scope packages with clear timelines.<br/>Custom builds are quoted after a free discovery call.</p></header><div className="web-package-grid">{packages.length ? packages.map((item)=><article className="web-package-card" key={item.id} onClick={()=>requestService({ title:item.title, description:item.copy, icon:item.icon, price:item.price }, 'web-apps')} onKeyDown={(event)=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();requestService({ title:item.title, description:item.copy, icon:item.icon, price:item.price }, 'web-apps')}}} role="button" tabIndex="0"><i><Icon name={item.icon}/></i><h2>{item.title}</h2><div className="web-package-price"><strong>₹{item.price}</strong><small>onwards</small></div><b aria-hidden="true"/><p>{item.copy}</p><ul>{item.features.map((feature)=><li key={feature}><span>✓</span>{feature}</li>)}</ul><Link onClick={(event)=>{event.preventDefault();requestService({ title:item.title, description:item.copy, icon:item.icon, price:item.price }, 'web-apps')}} to="/contact">Get Started</Link></article>) : <p className="admin-muted-text">{failed ? 'Packages are unavailable right now.' : 'No packages are available yet.'}</p>}</div></section>
     <section className="web-growth-section"><div className="container"><div className="web-growth-media"><img src={webGrowthDashboard} alt="Laptop showing a modern business analytics dashboard"/><span aria-hidden="true"/></div><div className="web-growth-copy"><header><span>Built for Growth</span><h2>Every build ships with marketing in its DNA</h2><p>A beautiful site that can’t be found or doesn’t convert is a cost, not an asset. Our development team works with marketing from day one.</p></header><div>{growthPoints.map(([icon,title,copy])=><article key={title}><i><Icon name={icon}/></i><section><h3>{title}</h3><p>{copy}</p></section></article>)}</div></div></div></section>
   </div>
 }
 
 function MarketingPage() {
   const { requestService } = useServiceRequest()
+  const { services: marketingNodes, loading, failed } = useDirectServiceNodes('marketing')
+  const marketingServices = marketingNodes.map((item) => ({ id: item.id, title: item.name, copy: item.description, icon: item.metadata?.icon || 'megaphone' }))
   const [budget,setBudget] = useState('50000')
   const [cost,setCost] = useState('250')
   const [rate,setRate] = useState('4')
   const leads = (+cost || 0) ? (+budget || 0) / +cost : 0
   const conversions = leads * (+rate || 0) / 100
+  if (loading) return <Loader fullScreen message="Loading marketing services..." />
   return <div className="interactive-services-page marketing-interactive-page">
     <header className="services-page-heading"><span>Our Marketing Services</span><h1>Marketing Solutions Built for Growth</h1><p>Strategy, creative execution and performance tracking—all in one place.</p></header>
     <section className="marketing-direct-services">
-      <div className="service-detail-grid marketing-direct-grid">{directServices.map(([title,copy,icon],index)=><article className={`service-detail-card service-detail-card-${index + 1} marketing-direct-card`} key={title} onClick={()=>requestService({title,description:copy,icon})} onKeyDown={(event)=>(event.key==='Enter'||event.key===' ')&&requestService({title,description:copy,icon})} role="button" tabIndex="0"><i><Icon name={icon}/></i><div><h3>{title}</h3><p>{copy}</p></div><footer><strong>Learn More</strong><span aria-hidden="true">→</span></footer></article>)}</div>
+      <div className="service-detail-grid marketing-direct-grid">{marketingServices.length ? marketingServices.map(({id,title,copy,icon},index)=><article className={`service-detail-card service-detail-card-${index + 1} marketing-direct-card`} key={id} onClick={()=>requestService({title,description:copy,icon}, 'marketing')} onKeyDown={(event)=>(event.key==='Enter'||event.key===' ')&&requestService({title,description:copy,icon}, 'marketing')} role="button" tabIndex="0"><i><Icon name={icon}/></i><div><h3>{title}</h3><p>{copy}</p></div><footer><strong>Learn More</strong><span aria-hidden="true">→</span></footer></article>) : <p className="admin-muted-text">{failed ? 'Services are unavailable right now.' : 'No marketing services are available yet.'}</p>}</div>
     </section>
     <section className="service-free-tool marketing-estimator">
       <header><span><Icon name="calculator"/>Free Tool</span><h2>Marketing <em>Results</em> Estimator</h2><p>Plan an indicative campaign outcome using your budget and conversion assumptions.</p></header>
@@ -176,7 +180,7 @@ function MarketingWebApps({ type = 'marketing' }) {
   const { requestService } = useServiceRequest()
   const isWebApps = type === 'web-apps'
   const isInfluencers = type === 'influencers'
-  const offerings = isWebApps ? webAppOfferings : isInfluencers ? influencerOfferings : marketingOfferings
+  const offerings = isWebApps ? webAppOfferings : marketingOfferings
 
   if (type === 'marketing') return <MarketingPage />
   if (type === 'influencers') return <InfluencerPage />

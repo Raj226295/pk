@@ -33,6 +33,15 @@ function load_env_file(string $path): void
         $name = trim($parts[0]);
         $value = trim($parts[1]);
 
+        // A hosting provider or Apache process environment takes precedence
+        // over the local .env file. This lets the same deployment package use
+        // per-host settings without editing tracked source files.
+        $existingValue = $_ENV[$name] ?? getenv($name);
+        if (is_string($existingValue) && $existingValue !== '') {
+            $_ENV[$name] = $existingValue;
+            continue;
+        }
+
         if (
             $value !== '' &&
             (

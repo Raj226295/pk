@@ -30,13 +30,14 @@ function getSafeRedirectPath(role, redirectTo = '') {
 }
 
 function Login() {
-  const { login } = useAuth()
+  const { login, googleLogin } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [form, setForm] = useState({ identifier: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [googleSubmitting, setGoogleSubmitting] = useState(false)
 
   const redirectTo = location.state?.from?.pathname
 
@@ -59,6 +60,27 @@ function Login() {
       setError(extractApiError(err))
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    setGoogleSubmitting(true)
+    setError('')
+
+    try {
+      const user = await googleLogin()
+      const destination = user.needsProfileCompletion ? '/dashboard/profile?complete=phone' : getSafeRedirectPath(user.role, redirectTo)
+      navigate(destination, { replace: true })
+    } catch (err) {
+      if (err?.code === 'auth/popup-closed-by-user') {
+        setError('Google sign-in was cancelled.')
+      } else if (String(err?.code || '').startsWith('auth/')) {
+        setError('Unable to sign in with Google. Please try again.')
+      } else {
+        setError(extractApiError(err))
+      }
+    } finally {
+      setGoogleSubmitting(false)
     }
   }
 
@@ -117,14 +139,14 @@ function Login() {
 
           <div className="login-divider"><span>or</span></div>
 
-          <button aria-disabled="true" className="login-google" title="Google login is not currently available" type="button">
+          <button className="login-google" disabled={googleSubmitting || submitting} onClick={handleGoogleSignIn} type="button">
             <svg aria-hidden="true" className="google-icon" viewBox="0 0 24 24">
               <path fill="#4285f4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.06H12v3.88h5.38a4.6 4.6 0 0 1-2 3.02v2.52h3.24c1.9-1.75 2.98-4.33 2.98-7.36Z" />
               <path fill="#34a853" d="M12 22c2.7 0 4.98-.9 6.64-2.42l-3.24-2.52c-.9.6-2.05.96-3.4.96-2.61 0-4.82-1.76-5.61-4.13H3.04v2.6A10 10 0 0 0 12 22Z" />
               <path fill="#fbbc05" d="M6.39 13.89A6.02 6.02 0 0 1 6.08 12c0-.66.11-1.3.31-1.89v-2.6H3.04A10 10 0 0 0 2 12c0 1.61.39 3.14 1.04 4.49l3.35-2.6Z" />
               <path fill="#ea4335" d="M12 5.98c1.47 0 2.79.5 3.83 1.5l2.88-2.87A9.65 9.65 0 0 0 12 2a10 10 0 0 0-8.96 5.51l3.35 2.6C7.18 7.74 9.39 5.98 12 5.98Z" />
             </svg>
-            <span>Login with Google</span>
+            <span>{googleSubmitting ? 'Connecting to Google...' : 'Login with Google'}</span>
           </button>
 
           <p className="login-signup">

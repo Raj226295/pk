@@ -6,8 +6,18 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api': 'http://localhost:5000',
-      '/uploads': 'http://localhost:5000',
+      // XAMPP serves this project from /pk. Proxy through Apache so starting
+      // the Vite client by itself still gives the app a working PHP API.
+      '/api': {
+        target: 'http://localhost',
+        changeOrigin: true,
+        rewrite: (path) => `/pk${path}`,
+      },
+      '/uploads': {
+        target: 'http://localhost',
+        changeOrigin: true,
+        rewrite: (path) => `/pk/backend${path}`,
+      },
     },
   },
 })

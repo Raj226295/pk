@@ -56,6 +56,7 @@ function serialize_user_record(array $user): array
         'role' => $user['role'] ?? 'user',
         'createdAt' => to_iso8601($user['created_at'] ?? null),
         'updatedAt' => to_iso8601($user['updated_at'] ?? null),
+        'needsProfileCompletion' => trim((string) ($user['phone'] ?? '')) === '',
     ];
 }
 

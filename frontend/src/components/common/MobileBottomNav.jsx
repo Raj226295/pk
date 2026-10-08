@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { createPortal } from 'react-dom'
 import { Icon } from '../../pages/public/Home.jsx'
@@ -8,7 +8,6 @@ import navTaxServices from '../../assets/nav-tax-services.png'
 import navInfluencer from '../../assets/nav-influencer.png'
 import navWebApps from '../../assets/nav-web-apps.png'
 import navMarketing from '../../assets/nav-marketing.png'
-import navProfile from '../../assets/nav-profile.png'
 
 const navigationIcons = {
   home: navHome,
@@ -16,54 +15,41 @@ const navigationIcons = {
   megaphone: navInfluencer,
   code: navWebApps,
   growthChart: navMarketing,
-  profile: navProfile,
 }
 
 function MobileBottomNav({ dashboard = false }) {
   const location = useLocation()
-  const navigationRef = useRef(null)
+  const [keyboardOpen, setKeyboardOpen] = useState(false)
 
   useEffect(() => {
-    const navigation = navigationRef.current
-    if (!navigation) return undefined
-
-    let frame = 0
-    const lockToViewport = () => {
-      if (frame) return
-      frame = window.requestAnimationFrame(() => {
-        frame = 0
-        const viewport = window.visualViewport
-        const visibleBottomOffset = viewport
-          ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)
-          : 0
-        navigation.style.setProperty('position', 'fixed', 'important')
-        navigation.style.setProperty('top', 'auto', 'important')
-        navigation.style.setProperty('right', '0', 'important')
-        navigation.style.setProperty('bottom', `${visibleBottomOffset}px`, 'important')
-        navigation.style.setProperty('left', '0', 'important')
-        navigation.style.setProperty('width', '100%', 'important')
-        navigation.style.setProperty('z-index', '2147483640', 'important')
-        navigation.style.setProperty('visibility', 'visible', 'important')
-        navigation.style.setProperty('opacity', '1', 'important')
-      })
+    const updateKeyboardState = () => {
+      const viewport = window.visualViewport
+      const keyboardHeight = viewport
+        ? window.innerHeight - viewport.height - viewport.offsetTop
+        : 0
+      setKeyboardOpen(keyboardHeight > 120)
     }
 
-    lockToViewport()
-    window.addEventListener('scroll', lockToViewport, { passive: true })
-    window.addEventListener('resize', lockToViewport, { passive: true })
-    window.addEventListener('orientationchange', lockToViewport)
-    window.addEventListener('pageshow', lockToViewport)
-    window.visualViewport?.addEventListener('resize', lockToViewport)
-    window.visualViewport?.addEventListener('scroll', lockToViewport)
+    const hideForTextEntry = (event) => {
+      if (event.target.matches?.('input:not([type="checkbox"]):not([type="radio"]), textarea, [contenteditable="true"]')) {
+        setKeyboardOpen(true)
+      }
+    }
+    const updateAfterFocusOut = () => window.setTimeout(updateKeyboardState, 0)
+
+    updateKeyboardState()
+    window.visualViewport?.addEventListener('resize', updateKeyboardState)
+    window.visualViewport?.addEventListener('scroll', updateKeyboardState)
+    window.addEventListener('focusin', hideForTextEntry)
+    window.addEventListener('focusout', updateAfterFocusOut)
+    window.addEventListener('orientationchange', updateKeyboardState)
 
     return () => {
-      if (frame) window.cancelAnimationFrame(frame)
-      window.removeEventListener('scroll', lockToViewport)
-      window.removeEventListener('resize', lockToViewport)
-      window.removeEventListener('orientationchange', lockToViewport)
-      window.removeEventListener('pageshow', lockToViewport)
-      window.visualViewport?.removeEventListener('resize', lockToViewport)
-      window.visualViewport?.removeEventListener('scroll', lockToViewport)
+      window.visualViewport?.removeEventListener('resize', updateKeyboardState)
+      window.visualViewport?.removeEventListener('scroll', updateKeyboardState)
+      window.removeEventListener('focusin', hideForTextEntry)
+      window.removeEventListener('focusout', updateAfterFocusOut)
+      window.removeEventListener('orientationchange', updateKeyboardState)
     }
   }, [])
 
@@ -73,7 +59,6 @@ function MobileBottomNav({ dashboard = false }) {
         { label: 'Services', to: '/dashboard/services', icon: 'services' },
         { label: 'Requests', to: '/dashboard/upload-documents', icon: 'document' },
         { label: 'Payments', to: '/dashboard/payments', icon: 'payment' },
-        { label: 'Profile', to: '/dashboard/profile', icon: 'profile' },
       ]
     : [
         { label: 'Home', to: '/', icon: 'home', end: true },
@@ -81,7 +66,6 @@ function MobileBottomNav({ dashboard = false }) {
         { label: 'Influencer', to: '/influencers', icon: 'megaphone' },
         { label: 'Web & Apps', to: '/web-apps', icon: 'code' },
         { label: 'Marketing', to: '/marketing', icon: 'growthChart' },
-        { label: 'Profile', to: '/login', icon: 'profile' },
       ]
 
   const getItemClass = (item, routerActive) => {
@@ -93,7 +77,7 @@ function MobileBottomNav({ dashboard = false }) {
   }
 
   const navigation = (
-    <nav aria-label="Mobile navigation" className={`mobile-bottom-nav${dashboard ? ' dashboard-mobile-bottom-nav' : ''}`} ref={navigationRef}>
+    <nav aria-label="Mobile navigation" className={`mobile-bottom-nav${dashboard ? ' dashboard-mobile-bottom-nav' : ''}${keyboardOpen ? ' mobile-keyboard-open' : ''}`}>
       {items.map((item) => (
         <NavLink className={({ isActive }) => getItemClass(item, isActive)} end={item.end} key={item.label} to={item.to}>
           {dashboard ? <AdminIcon name={item.icon} size={22} /> : navigationIcons[item.icon]

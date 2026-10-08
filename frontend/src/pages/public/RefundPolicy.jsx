@@ -17,9 +17,9 @@ const nonRefundableServices = [
 
 function RefundPolicy() {
     return (
-        <div className="page-stack container">
+        <div className="legal-policy-page container">
 
-            <section className="page-hero">
+            <section className="legal-policy-hero">
                 <span className="eyebrow">Legal</span>
                 <h1>Return &amp; Refund Policy</h1>
                 <p>
@@ -29,10 +29,10 @@ function RefundPolicy() {
                 <p className="hero-meta">Last updated: May 29, 2026</p>
             </section>
 
-            <section className="page-stack">
+            <section className="legal-policy-content">
 
                 {/* Service Policy */}
-                <article className="panel">
+                <article className="legal-policy-section">
                     <h3>Service policy</h3>
                     <p>
                         PK Business Solution provides professional and digital services. Once the service
@@ -42,8 +42,8 @@ function RefundPolicy() {
                 </article>
 
                 {/* Refund Eligibility + Non-Refundable — two columns */}
-                <div className="split-section align-start">
-                    <article className="panel">
+                <div className="legal-policy-split">
+                    <article className="legal-policy-section">
                         <h3>Refund eligibility</h3>
                         <p>A refund may be approved only if one of the following conditions is met:</p>
                         <ul className="privacy-list">
@@ -53,7 +53,7 @@ function RefundPolicy() {
                         </ul>
                     </article>
 
-                    <article className="panel">
+                    <article className="legal-policy-section">
                         <h3>Non-refundable services</h3>
                         <p>Once processing has started, no refund will be provided for:</p>
                         <ul className="privacy-list">
@@ -65,7 +65,7 @@ function RefundPolicy() {
                 </div>
 
                 {/* Refund Processing */}
-                <article className="panel">
+                <article className="legal-policy-section">
                     <h3>Refund processing</h3>
                     <p>
                         Approved refunds will be processed within <strong>5–7 working days</strong> to the
@@ -74,7 +74,7 @@ function RefundPolicy() {
                 </article>
 
                 {/* Contact */}
-                <article className="panel">
+                <article className="legal-policy-section">
                     <h3>Contact us</h3>
                     <p>
                         To request a refund or for any questions about this policy, please contact us:

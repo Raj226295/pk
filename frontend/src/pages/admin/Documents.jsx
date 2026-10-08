@@ -14,6 +14,7 @@ function Documents() {
   const navigate = useNavigate()
   const { userId: routeUserId = '' } = useParams()
   const [documents, setDocuments] = useState([])
+  const [influencerSubmissions, setInfluencerSubmissions] = useState([])
   const [folders, setFolders] = useState([])
   const [users, setUsers] = useState([])
   const [activeUserId, setActiveUserId] = useState('')
@@ -42,6 +43,7 @@ function Documents() {
 
     const clientUsers = (usersData.users || []).filter((user) => user.role !== 'admin')
     setDocuments(documentsData.documents || [])
+    setInfluencerSubmissions(documentsData.influencerSubmissions || [])
     setFolders(documentsData.folders || [])
     setUsers(clientUsers)
     setActiveUserId((current) => {
@@ -125,6 +127,16 @@ function Documents() {
       return matchesUser && matchesStatus
     })
   }, [activeFolder, documents, statusFilter])
+
+  const activeInfluencerSubmissions = useMemo(
+    () => influencerSubmissions.filter((submission) => submission.userId === activeFolder?.userId),
+    [activeFolder, influencerSubmissions],
+  )
+
+  const documentsById = useMemo(
+    () => new Map(documents.map((document) => [document._id, document])),
+    [documents],
+  )
 
   const handleDownload = async (document) => {
     setDownloadingId(document._id)
@@ -384,6 +396,44 @@ function Documents() {
                 title="No files to show"
               />
             )}
+
+            {activeInfluencerSubmissions.length ? (
+              <section className="admin-folder-submissions">
+                <div className="admin-folder-submissions-head">
+                  <div>
+                    <span className="admin-surface-eyebrow">Booking details</span>
+                    <h4>Influencer booking submissions</h4>
+                  </div>
+                  <span>{activeInfluencerSubmissions.length} submission{activeInfluencerSubmissions.length === 1 ? '' : 's'}</span>
+                </div>
+                {activeInfluencerSubmissions.map((submission) => (
+                  <article className="admin-folder-submission" key={submission._id}>
+                    <div className="admin-record-title-row">
+                      <strong>{submission.type}</strong>
+                      <StatusBadge status={submission.status} />
+                    </div>
+                    <p className="admin-folder-submission-date">Submitted: {formatDateTime(submission.createdAt)}</p>
+                    <dl className="admin-submission-fields">
+                      {submission.submittedFields.map((field, index) => {
+                        const document = field.documentId ? documentsById.get(field.documentId) : null
+                        return (
+                          <div key={`${submission._id}-${field.label}-${index}`}>
+                            <dt>{field.label}</dt>
+                            <dd>
+                              {document ? (
+                                document.fileUrl ? <a href={document.fileUrl} rel="noreferrer" target="_blank">{document.originalName || document.filename || 'View uploaded file'}</a> : (document.originalName || document.filename || 'Uploaded file')
+                              ) : (field.valueText || '—')}
+                            </dd>
+                          </div>
+                        )
+                      })}
+                    </dl>
+                    {submission.notes ? <p className="admin-client-note">Note: {submission.notes}</p> : null}
+                    {submission.adminRemarks ? <p className="admin-client-note">Admin remark: {submission.adminRemarks}</p> : null}
+                  </article>
+                ))}
+              </section>
+            ) : null}
           </section>
         </>
       )}

@@ -1,7 +1,12 @@
 RewriteEngine On
 
-# Serve locally stored uploads from the backend uploads folder.
-RewriteCond %{DOCUMENT_ROOT}/backend/uploads/$1 -f
+# Firebase Admin credentials may live in backend/credentials on Hostinger.
+# Never serve that directory, even when the JSON file itself exists.
+RewriteRule (^|/)backend/credentials(?:/|$) - [F,L,NC]
+
+# Serve locally stored uploads from the backend uploads folder. The rewrite
+# target is relative to this project directory, so it works both at /pk in
+# XAMPP and when the project is deployed as the document root.
 RewriteRule ^uploads/(.*)$ backend/uploads/$1 [L]
 
 # Upload URLs should not fall through to the React app.

@@ -11,8 +11,9 @@ import {
 import api, { extractApiError } from '../../lib/api.js'
 import { resolveUploadUrl } from '../../lib/uploads.js'
 import { Icon } from '../public/Home.jsx'
+import { useServiceRequest } from '../../context/ServiceRequestContext.jsx'
 import { serviceGroups } from '../public/Services.jsx'
-import { directServices, influencers, webPackages } from '../public/MarketingWebApps.jsx'
+import { directServices, webPackages } from '../public/MarketingWebApps.jsx'
 import gstServiceIllustration from '../../assets/upload-service-icons/gst.png'
 import incomeTaxIllustration from '../../assets/upload-service-icons/income-tax.png'
 import accountingIllustration from '../../assets/upload-service-icons/accounting.png'
@@ -21,6 +22,9 @@ import influencerIllustration from '../../assets/upload-service-icons/influencer
 import marketingIllustration from '../../assets/upload-service-icons/marketing.png'
 import webAppsIllustration from '../../assets/upload-service-icons/web-apps.png'
 import backIllustration from '../../assets/upload-service-icons/back.png'
+import comingSoonIllustration from '../../assets/coming-soon-illustration.png'
+import instagramPlatformIcon from '../../assets/instagram-platform.png'
+import youtubePlatformIcon from '../../assets/youtube-platform.png'
 
 const initialForm = {
   documentType: documentTypeOptions[0],
@@ -29,6 +33,7 @@ const initialForm = {
 }
 
 const activeServiceStatuses = ['pending', 'approved', 'in progress']
+const influencerPlatformIcon = (platform) => platform === 'Instagram' ? instagramPlatformIcon : youtubePlatformIcon
 
 // The required-document checklist has a small, deliberately limited icon set.
 // Keeping these inline makes every mobile icon sharp at every pixel density and
@@ -75,10 +80,6 @@ const dashboardServiceOptions = [
   ),
   ...directServices.map(([name]) => ({ name, documentType: name })),
   { name: 'Influencer Marketing', documentType: 'Influencer Marketing' },
-  ...influencers.map((creator) => ({
-    name: `Influencer Booking — ${creator.name}`,
-    documentType: `Influencer Booking — ${creator.name}`,
-  })),
   ...webPackages.map((service) => ({ name: service.title, documentType: service.title })),
 ]
 
@@ -95,6 +96,23 @@ const serviceCategories = [
   { name: 'Web & App Development', icon: 'code', artwork: webAppsIllustration, tone: 'blue', services: ['Business Website', 'E-commerce Website', 'Custom Web Application', 'Mobile App Development', 'UI/UX Design', 'Website Redesign', 'Website Maintenance'] },
   { name: 'Marketing', icon: 'growthChart', artwork: marketingIllustration, tone: 'orange', services: ['SEO', 'Social Media Marketing', 'Google Ads', 'Meta Ads', 'Content Marketing', 'Performance Marketing', 'Branding', 'Marketing Campaign'] },
 ]
+
+const mainServiceByCategory = {
+  'GST Services': 'tax-service',
+  'Income Tax': 'tax-service',
+  Accounting: 'tax-service',
+  'Business Registration': 'tax-service',
+  'Influencer Marketing': 'influencers',
+  'Web & App Development': 'web-apps',
+  Marketing: 'marketing',
+}
+
+const mainServiceLabels = {
+  'tax-service': 'Tax Services',
+  marketing: 'Marketing',
+  influencers: 'Influencer Marketing',
+  'web-apps': 'Web & Apps',
+}
 
 const serviceDescriptions = {
   'GST Registration': 'New GST registration for your business',
@@ -252,6 +270,7 @@ function getLatestMatchingDocument(documents = [], { requiredDocument = '', docu
 
 function UploadDocuments() {
   const navigate = useNavigate()
+  const { ensureServiceAvailable } = useServiceRequest()
   const [searchParams] = useSearchParams()
   const selectedServiceId = searchParams.get('service') || ''
   const selectedDocumentType = searchParams.get('documentType') || ''
@@ -268,6 +287,9 @@ function UploadDocuments() {
   const [status, setStatus] = useState({ type: '', message: '' })
   const [activeCategory, setActiveCategory] = useState('')
   const [selectedSubservice, setSelectedSubservice] = useState('')
+  const [inactiveService, setInactiveService] = useState('')
+  const [influencers, setInfluencers] = useState([])
+  const [influencersLoading, setInfluencersLoading] = useState(false)
   const [isServiceSelectionComplete, setIsServiceSelectionComplete] = useState(Boolean(selectedCatalogServiceId || selectedServiceId))
   const [flowStep, setFlowStep] = useState(selectedCatalogServiceId || selectedServiceId ? 3 : 1)
 
@@ -310,11 +332,30 @@ function UploadDocuments() {
     return category.services
   }, [activeCategory])
 
-  const selectCategory = (categoryName) => {
+  const selectCategory = async (categoryName) => {
+    const mainService = mainServiceByCategory[categoryName] || 'tax-service'
+    if (!await ensureServiceAvailable(mainService, { redirectToComingSoon: false })) {
+      setInactiveService(mainService)
+      return
+    }
+    setInactiveService('')
     setActiveCategory(categoryName)
     setSelectedSubservice('')
     setIsServiceSelectionComplete(false)
     setFlowStep(2)
+  }
+
+  useEffect(() => {
+    if (activeCategory !== 'Influencer Marketing') return
+    setInfluencersLoading(true)
+    api.get('/api/public/influencers')
+      .then(({ data }) => setInfluencers(data.influencers || []))
+      .catch((error) => setStatus({ type: 'error', message: extractApiError(error) }))
+      .finally(() => setInfluencersLoading(false))
+  }, [activeCategory])
+
+  const chooseInfluencer = (influencer) => {
+    navigate(`/dashboard/service-request?influencer=${encodeURIComponent(influencer.id)}`)
   }
 
   const continueWithSelectedService = () => {
@@ -339,6 +380,14 @@ function UploadDocuments() {
     }
 
     setFlowStep((current) => Math.max(1, current - 1))
+  }
+
+  const browseOtherServices = () => {
+    setInactiveService('')
+    setActiveCategory('')
+    setSelectedSubservice('')
+    setIsServiceSelectionComplete(false)
+    setFlowStep(1)
   }
 
   useEffect(() => {
@@ -758,6 +807,17 @@ function UploadDocuments() {
         title="Upload Documents"
       />
 
+      {inactiveService ? <section className="dashboard-service-coming-soon" aria-live="polite">
+        <header>
+          <h1>Coming <em>Soon</em></h1>
+          <h2>{mainServiceLabels[inactiveService] || 'This service'} is getting something amazing.</h2>
+          <p>We’re working behind the scenes to bring you a better experience. Stay tuned for exciting updates.</p>
+        </header>
+        <img className="dashboard-coming-soon-art" src={comingSoonIllustration} alt="PK Business Solutions page under development" />
+        <div className="dashboard-coming-soon-actions">
+          <button className="button button-ghost" onClick={browseOtherServices} type="button">Browse other services</button>
+        </div>
+      </section> : <>
       {flowStep > 1 ? <div className="upload-flow-controls">
         <button aria-label={flowStep === 1 ? 'Back to overview' : 'Back to previous step'} className="upload-flow-back" onClick={goBackInUploadFlow} type="button">
           <img alt="" aria-hidden="true" src={backIllustration} />
@@ -829,7 +889,31 @@ function UploadDocuments() {
 
       </section> : null}
 
-      {flowStep === 2 ? <section aria-live="polite" className="panel service-subservice-panel is-open upload-flow-type-card upload-flow-content">
+      {flowStep === 2 && activeCategory === 'Influencer Marketing' ? <section aria-live="polite" className="panel service-subservice-panel is-open upload-flow-type-card upload-flow-content influencer-upload-picker">
+          <div className="service-subservice-panel-inner">
+            <header><span>2</span><div><strong>Select Influencer</strong><small>Choose the creator whose booking documents you want to submit.</small></div></header>
+            {influencersLoading ? <p className="admin-muted-text">Loading influencers...</p> : <div className="influencer-card-grid influencer-upload-card-grid" role="list">
+              {influencers.map((influencer) => <button aria-label={`Select ${influencer.name}`} className="influencer-card influencer-upload-marketplace-card" key={influencer.id} onClick={() => chooseInfluencer(influencer)} type="button">
+                <div className="influencer-photo" style={influencer.image ? { backgroundImage: `url(${resolveUploadUrl(influencer.image)})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
+                  <span><img alt="" className="influencer-platform-icon" src={influencerPlatformIcon(influencer.platform)} />{influencer.niche || 'Creator'}</span>
+                </div>
+                <div className="influencer-card-body">
+                  <h3>{influencer.name}<b title="Verified creator"><Icon name="verified" /></b></h3>
+                  <p><img alt="" className="influencer-platform-icon" src={influencerPlatformIcon(influencer.platform)} />{influencer.username || influencer.platform || 'Influencer'}</p>
+                  <div className="influencer-metrics">
+                    <div><Icon name="users" /><strong>{influencer.followers || '—'}</strong><small>Followers</small></div>
+                    <div><Icon name="growthChart" /><strong>{influencer.engagement || '—'}</strong><small>Engagement</small></div>
+                    <div><Icon name="mapPin" /><strong>{influencer.location || '—'}</strong><small>Location</small></div>
+                  </div>
+                  <footer><strong>₹{Number(influencer.booking_price || 0).toLocaleString('en-IN')}</strong><span>Select creator <Icon name="arrowRight" /></span></footer>
+                </div>
+              </button>)}
+              {!influencers.length ? <p className="service-search-empty">No influencers are available right now.</p> : null}
+            </div>}
+          </div>
+        </section> : null}
+
+      {flowStep === 2 && activeCategory !== 'Influencer Marketing' ? <section aria-live="polite" className="panel service-subservice-panel is-open upload-flow-type-card upload-flow-content">
           <div className="service-subservice-panel-inner">
             <header>
               <span>2</span>
@@ -1060,10 +1144,11 @@ function UploadDocuments() {
               <strong>Need Help?</strong>
               <p>Facing any issue? Contact our support team.</p>
             </div>
-            <button onClick={() => navigate('/contact')} type="button">Contact Support</button>
+            <button onClick={() => navigate('/dashboard/contact')} type="button">Contact Support</button>
           </div>
         </article>
       </section> : null}
+      </>}
     </div>
   )
 }

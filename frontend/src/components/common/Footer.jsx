@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import logo from '../../assets/logo.png'
+import logo from '../../assets/logo-optimized.png'
 import { siteBrand, siteContact, siteSocials } from '../../data/siteData.js'
 
 const Icon = ({ name }) => {
@@ -53,7 +53,8 @@ function Footer() {
           </div>
         </div>
       </div>
-      <div className="footer-bottom"><div className="container"><i /><Icon name="shield" /><span>&copy; {new Date().getFullYear()} {siteBrand.name}. All rights reserved.</span><i /></div></div>
+      <div className="footer-bottom"><div className="container"><i /><span>&copy; {new Date().getFullYear()} {siteBrand.name}. All rights reserved. <br></br>Designed & Developed By MarketFuel</span><i /></div></div>
+      
     </footer>
   )
 }

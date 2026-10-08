@@ -1,5 +1,7 @@
 {
     "require": {
-        "cloudinary/cloudinary_php": "^3.1"
+        "cloudinary/cloudinary_php": "^3.1",
+        "kreait/firebase-php": "^7.14",
+        "paragonie/sodium_compat_ext_sodium": "^1.0"
     }
 }

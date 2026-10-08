@@ -261,9 +261,15 @@ function Payments() {
   )
 
   const selectedPayment = useMemo(
-    () => payments.find((payment) => payment._id === selectedPaymentId) || filteredPayments[0] || null,
-    [filteredPayments, payments, selectedPaymentId],
+    () => filteredPayments.find((payment) => payment._id === selectedPaymentId) || filteredPayments[0] || null,
+    [filteredPayments, selectedPaymentId],
   )
+
+  useEffect(() => {
+    setSelectedPaymentId((current) =>
+      filteredPayments.some((payment) => payment._id === current) ? current : filteredPayments[0]?._id || '',
+    )
+  }, [filteredPayments])
 
   const selectedDraft = selectedPayment
     ? updates[selectedPayment._id] || createPaymentDraft(selectedPayment)
@@ -641,6 +647,9 @@ function Payments() {
             <button className="button button-ghost button-compact" onClick={resetAdvancedFilters} type="button">
               ↻ Reset Filters
             </button>
+            <button className="button button-ghost button-compact" onClick={exportPayments} type="button">
+              Export CSV
+            </button>
             <button className="button button-primary button-compact" onClick={exportPaymentsPdf} type="button">
               <AdminIcon name="document" size={17} strokeWidth={2} />
               Export PDF
@@ -648,6 +657,40 @@ function Payments() {
           </div>
         </div>
       </section>
+
+      {filteredPayments.length ? (
+        <section className="panel admin-payment-picker">
+          <div className="admin-subpanel-head">
+            <div>
+              <h4>Matching payments</h4>
+              <span className="admin-muted-text">
+                Showing {filteredPayments.length} of {payments.length} payment{payments.length === 1 ? '' : 's'}
+              </span>
+            </div>
+          </div>
+          <div className="admin-payment-card-list">
+            {filteredPayments.map((payment) => (
+              <button
+                className={`admin-payment-card${selectedPayment?._id === payment._id ? ' active' : ''}`}
+                key={payment._id}
+                onClick={() => setSelectedPaymentId(payment._id)}
+                type="button"
+              >
+                <div className="admin-payment-card-main">
+                  <div><span>Invoice</span><strong>{payment.invoiceNumber}</strong><small>{formatDateTime(payment.createdAt)}</small></div>
+                  <div><span>Client</span><strong>{payment.user?.name || 'Unknown client'}</strong><small>{payment.user?.phone || payment.user?.email || 'No contact details'}</small></div>
+                  <div><span>Service</span><strong>{payment.serviceType}</strong><small>{payment.paymentMethod === 'manual' ? 'Manual / UPI' : 'Online checkout'}</small></div>
+                  <div><span>Amount</span><strong>{formatCurrency(payment.amount)}</strong><small>{payment.status} / {payment.verificationStatus || 'pending'}</small></div>
+                </div>
+                <div className="admin-payment-card-ids">
+                  <span>Payment ID: {payment._id}</span>
+                  <span>Transaction: {payment.transactionId || payment.razorpayPaymentId || 'Pending'}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {filteredPayments.length ? (
         selectedPayment ? (

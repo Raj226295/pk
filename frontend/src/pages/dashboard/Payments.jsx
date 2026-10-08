@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import EmptyState from '../../components/common/EmptyState.jsx'
 import Loader from '../../components/common/Loader.jsx'
 import PageHeader from '../../components/common/PageHeader.jsx'
@@ -14,7 +14,7 @@ import { Icon } from '../public/Home.jsx'
 const initialForm = {
   serviceId: '',
   description: '',
-  paymentMethod: 'manual',
+  paymentMethod: 'online',
   transactionId: '',
 }
 
@@ -448,8 +448,8 @@ function Payments() {
               <label>
                 Payment mode
                 <select name="paymentMethod" onChange={handleChange} value={form.paymentMethod}>
-                  <option value="manual">Upload Razorpay / UPI Payment Screenshot</option>
                   <option value="online">Pay Now (Razorpay Checkout)</option>
+                  <option value="manual">Upload Razorpay / UPI Payment Screenshot</option>
                 </select>
               </label>
               {form.paymentMethod === 'manual' ? (
@@ -643,7 +643,7 @@ function Payments() {
       <section className="payment-support-strip">
         <span><Icon name="headset" /></span>
         <div><strong>Need Help?</strong><p>If you face any issue with payments, feel free to contact our support team.</p></div>
-        <a href="/contact">Contact Support <Icon name="arrowRight" /></a>
+        <Link to="/dashboard/contact">Contact Support <Icon name="arrowRight" /></Link>
       </section>
     </div>
   )

@@ -1,19 +1,28 @@
 import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import api from '../../lib/api.js'
 import homeHeroAdvisor from '../../assets/home-hero-advisor-transparent.png'
 import whatsappCtaIcon from '../../assets/whatsapp-cta-icon.png'
 import whyChooseTeam from '../../assets/why-choose-team.png'
 
 
 export const homeServices = [
-  { icon: 'fileCheck', tone: 'blue', title: 'GST Services', copy: 'Registration, monthly returns, notice handling, LUT, refunds and audits — fully managed.', tags: ['Registration', 'GSTR-1/3B', 'Notices'], to: '/services?category=gst', price: '2,500', flowId: 'gst-registration-return', documentType: 'GST Registration & Return' },
-  { icon: 'calculator', tone: 'green', title: 'Income Tax Services', copy: 'ITR filing for individuals and businesses, tax planning, TDS and notice resolution.', tags: ['ITR Filing', 'Tax Planning', 'TDS'], to: '/services?category=income-tax', price: '1,500', flowId: 'income-tax-filing', documentType: 'Income Tax Filing' },
-  { icon: 'book', tone: 'purple', title: 'Accounting Services', copy: 'Bookkeeping, payroll, MIS reporting and Virtual CFO support for growing businesses.', tags: ['Bookkeeping', 'Payroll', 'MIS'], to: '/services?category=accounting', price: '3,500', flowId: 'accounting-bookkeeping', documentType: 'Accounting / Bookkeeping' },
-  { icon: 'building', tone: 'amber', title: 'Business Registration', copy: 'Company, LLP, Partnership, MSME, Trade License, DSC and IEC — start right, stay compliant.', tags: ['Pvt Ltd / LLP', 'MSME', 'IEC / DSC'], to: '/services?category=registration', price: '5,000', flowId: 'company-registration-food-license', documentType: 'Company Registration' },
+  { icon: 'fileCheck', tone: 'blue', title: 'GST Services', copy: 'Registration, monthly returns, notice handling, LUT, refunds and audits — fully managed.', tags: ['Registration', 'GSTR-1/3B', 'Notices'], to: '/services', price: '2,500', flowId: 'gst-registration-return', documentType: 'GST Registration & Return' },
+  { icon: 'calculator', tone: 'green', title: 'Income Tax Services', copy: 'ITR filing for individuals and businesses, tax planning, TDS and notice resolution.', tags: ['ITR Filing', 'Tax Planning', 'TDS'], to: '/services', price: '1,500', flowId: 'income-tax-filing', documentType: 'Income Tax Filing' },
+  { icon: 'book', tone: 'purple', title: 'Accounting Services', copy: 'Bookkeeping, payroll, MIS reporting and Virtual CFO support for growing businesses.', tags: ['Bookkeeping', 'Payroll', 'MIS'], to: '/services', price: '3,500', flowId: 'accounting-bookkeeping', documentType: 'Accounting / Bookkeeping' },
+  { icon: 'building', tone: 'amber', title: 'Business Registration', copy: 'Company, LLP, Partnership, MSME, Trade License, DSC and IEC — start right, stay compliant.', tags: ['Pvt Ltd / LLP', 'MSME', 'IEC / DSC'], to: '/services', price: '5,000', flowId: 'company-registration-food-license', documentType: 'Company Registration' },
   { icon: 'megaphone', tone: 'rose', title: 'Digital Marketing', copy: 'SEO, Google Ads, Meta Ads, content and AI video — performance marketing that converts.', tags: ['SEO', 'Google Ads', 'Meta Ads'], to: '/marketing' },
   { icon: 'sparkle', tone: 'royal', title: 'Influencer Marketing', copy: 'Browse verified influencers and launch campaigns across Instagram and YouTube.', tags: ['Instagram', 'YouTube', 'Celebrity'], to: '/influencers' },
   { icon: 'globe', tone: 'cyan', title: 'Website Development', copy: 'Business websites, e-commerce stores and landing pages built for speed and SEO.', tags: ['Business Sites', 'E-commerce', 'Landing Pages'], to: '/web-apps' },
   { icon: 'phone', tone: 'orange', title: 'App Development', copy: 'Android and iOS apps, CRM and custom IT solutions tailored to your operations.', tags: ['Android / iOS', 'CRM', 'Custom IT'], to: '/web-apps' },
 ]
+
+const homeServiceRoute = (serviceType) => ({
+  tax: '/services',
+  marketing: '/marketing',
+  influencer: '/influencers',
+  'web-app': '/web-apps',
+}[serviceType] || '/services')
 
 const homeTestimonials = [
   { quote: 'PK handles our GST, TDS and books end-to-end. There are zero missed deadlines and zero penalties.', name: 'Rajesh Agarwal', company: 'Director, Agarwal Textiles' },
@@ -127,6 +136,51 @@ export const Icon = ({ name }) => {
 
 function Home() {
   const navigate = useNavigate()
+  const testimonialTrackRef = useRef(null)
+  const testimonialIndexRef = useRef(0)
+  const [publicContent, setPublicContent] = useState({ featuredServices: [], testimonials: [], faqs: [], settings: {} })
+  useEffect(() => { let mounted = true; api.get('/api/public/site').then(({ data }) => { if (mounted) setPublicContent(data) }).catch(() => {}); return () => { mounted = false } }, [])
+  const dynamicServices = publicContent.featuredServices?.map((service, index) => ({ icon: service.icon || 'fileCheck', tone: ['blue','green','purple','amber'][index % 4], title: service.name, copy: service.short_description, tags: service.service_type ? [service.service_type] : [], to: homeServiceRoute(service.service_type) }))
+  const displayedServices = dynamicServices?.length ? dynamicServices : homeServices
+  const displayedTestimonials = publicContent.testimonials?.length ? publicContent.testimonials.map((item) => ({ name: item.title, company: item.summary, quote: item.body })) : homeTestimonials
+  const displayedFaqs = publicContent.faqs?.length ? publicContent.faqs.map((item) => ({ question: item.title, answer: item.body })) : homeFaqs
+  const testimonialCount = displayedTestimonials.length
+
+  useEffect(() => {
+    const track = testimonialTrackRef.current
+    const mobileQuery = window.matchMedia('(max-width: 700px)')
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+
+    if (!track || reducedMotionQuery.matches || testimonialCount < 2) {
+      return undefined
+    }
+
+    const cards = Array.from(track.children)
+    const syncIndex = () => {
+      testimonialIndexRef.current = cards.reduce((closestIndex, card, index) => (
+        Math.abs(card.offsetLeft - track.scrollLeft) < Math.abs(cards[closestIndex].offsetLeft - track.scrollLeft)
+          ? index
+          : closestIndex
+      ), 0)
+    }
+
+    const intervalId = window.setInterval(() => {
+      if (!mobileQuery.matches || document.hidden || track.matches(':hover')) return
+
+      testimonialIndexRef.current = (testimonialIndexRef.current + 1) % cards.length
+      track.scrollTo({
+        left: cards[testimonialIndexRef.current].offsetLeft,
+        behavior: 'smooth',
+      })
+    }, 4000)
+
+    track.addEventListener('scrollend', syncIndex)
+    return () => {
+      window.clearInterval(intervalId)
+      track.removeEventListener('scrollend', syncIndex)
+    }
+  }, [testimonialCount])
+
   const stats = [
     ['users', '2,500+', 'Happy Clients'],
     ['bolt', 'Same-Day', 'Response'],
@@ -139,8 +193,8 @@ function Home() {
       <section className="pk-hero container">
         <div className="pk-hero-copy">
           <span className="pk-kicker">Compliance • Accounting • Digital Growth</span>
-          <h1>Your Trusted Partner for<br/>Business Compliance,<br/>Accounting &amp; <em>Digital<br/>Growth</em></h1>
-          <p>GST, Income Tax, Accounting, Digital Marketing, Website Development &amp; Influencer Marketing — All Under One Roof.</p>
+          <h1>{publicContent.settings?.hero_title || <>Your Trusted Partner for<br/>Business Compliance,<br/>Accounting &amp; <em>Digital<br/>Growth</em></>}</h1>
+          <p>{publicContent.settings?.hero_description || 'GST, Income Tax, Accounting, Digital Marketing, Website Development & Influencer Marketing — All Under One Roof.'}</p>
           <div className="pk-hero-actions">
             <Link className="pk-btn pk-btn-gold" to="/contact">Get Free Consultation <span>→</span></Link>
             <a className="pk-btn pk-btn-outline pk-whatsapp-cta" href="https://wa.me/916299484291?text=Hi%20PK%20Business%20Solution%2C%20I%20need%20a%20consultation." target="_blank" rel="noreferrer"><img src={whatsappCtaIcon} alt="" aria-hidden="true"/> <span>WhatsApp Now</span></a>
@@ -167,7 +221,7 @@ function Home() {
           <p>From your first registration to daily compliance and aggressive digital growth —<br/>one expert team owns it all.</p>
         </div>
         <div className="pk-service-grid pk-service-grid-eight">
-          {homeServices.map((service) => (
+          {displayedServices.map((service) => (
             <article
               className={`pk-service-card pk-service-card-${service.tone}`}
               key={service.title}
@@ -234,8 +288,14 @@ function Home() {
 
       <section className="pk-section pk-testimonials container">
         <div className="pk-section-title"><span>Testimonials</span><h2>Trusted by businesses like yours</h2></div>
-        <div className="pk-testimonial-grid pk-testimonial-grid-six">
-          {homeTestimonials.map((testimonial) => (
+        <div
+          aria-label="Client testimonials"
+          className="pk-testimonial-grid pk-testimonial-grid-six"
+          ref={testimonialTrackRef}
+          role="region"
+          tabIndex="0"
+        >
+          {displayedTestimonials.map((testimonial) => (
             <article key={testimonial.name}>
               <div className="pk-quote" aria-hidden="true">”</div>
               <p>“{testimonial.quote}”</p>
@@ -253,7 +313,7 @@ function Home() {
         <div className="container">
           <div className="pk-section-title"><span>FAQ</span><h2>Questions, answered</h2></div>
           <div className="pk-faq-list">
-            {homeFaqs.map((faq) => (
+            {displayedFaqs.map((faq) => (
               <details key={faq.question}>
                 <summary><span>{faq.question}</span><i><Icon name="chevronDown"/></i></summary>
                 <div className="pk-faq-answer"><p>{faq.answer}</p></div>

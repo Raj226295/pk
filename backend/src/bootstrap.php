@@ -6,10 +6,16 @@ define('UPLOADS_ROOT', APP_ROOT . DIRECTORY_SEPARATOR . 'uploads');
 
 require_once APP_ROOT . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'env.php';
+
+// Headers (including CORS) are applied before app_context() creates the
+// database connection, so load environment settings here as well.
+load_env_file(APP_ROOT . DIRECTORY_SEPARATOR . '.env');
+
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'http.php';
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'db.php';
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'shared.php';
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'auth.php';
+require_once __DIR__ . DIRECTORY_SEPARATOR . 'firebase_auth.php';
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'cloudinary.php';
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'storage.php';
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'serializers.php';

@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext.jsx'
-import { adminLinks, dashboardLinks, siteBrand } from '../../data/siteData.js'
+import { adminLinks, dashboardLinks } from '../../data/siteData.js'
 import AdminIcon from '../admin/AdminIcon.jsx'
-import logoImg from '../../assets/logo.png' 
+import logoImg from '../../assets/logo-optimized.png' 
 import UserAvatar from '../common/UserAvatar.jsx'
 
 function Sidebar({ role = 'user' }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isServiceMenuOpen, setIsServiceMenuOpen] = useState(false)
   const { user, logout } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
@@ -55,11 +56,24 @@ function Sidebar({ role = 'user' }) {
 
       <div className={`sidebar-menu ${isMenuOpen ? 'is-open' : ''}`} id="dashboard-sidebar-menu">
         <nav className="sidebar-nav">
-          {links.map((link) => (
+          {links.map((link) => link.isServiceMenu ? (
+            <div className="sidebar-service-menu" key="admin-service-menu">
+              <button aria-expanded={isServiceMenuOpen} className="sidebar-link sidebar-service-menu-trigger" onClick={() => setIsServiceMenuOpen((open) => !open)} type="button">
+                <span className="sidebar-link-icon"><AdminIcon name="services" size={17} strokeWidth={1.8} /></span><span>Services</span><span className="sidebar-service-caret">▾</span>
+              </button>
+              {isServiceMenuOpen ? <div className="sidebar-service-submenu">
+                <NavLink to="/admin/services/tax-service">Tax Service</NavLink>
+                <NavLink to="/admin/services/marketing">Marketing</NavLink>
+                <NavLink to="/admin/services/influencers">Influencers</NavLink>
+                <NavLink to="/admin/services/web-apps">Web & Apps</NavLink>
+              </div> : null}
+            </div>
+          ) : (
             <NavLink
               key={link.to}
               end={link.end}
               className={({ isActive }) => (isActive ? 'sidebar-link active' : 'sidebar-link')}
+              onClick={() => setIsMenuOpen(false)}
               to={link.to}
             >
               {link.icon ? (

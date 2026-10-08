@@ -5,6 +5,9 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'bootstrap.php';
 require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'user_handlers.php';
 require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'admin_handlers.php';
+require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'content_handlers.php';
+require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'service_management_handlers.php';
+require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'influencer_requirement_handlers.php';
 
 try {
     apply_common_headers();
@@ -39,6 +42,11 @@ try {
         return;
     }
 
+    if ($method === 'POST' && $path === '/api/auth/google') {
+        handle_google_login($db);
+        return;
+    }
+
     if ($method === 'GET' && $path === '/api/blogs') {
         handle_get_blogs($db);
         return;
@@ -58,6 +66,14 @@ try {
         handle_get_public_service_catalog($db);
         return;
     }
+
+    if ($method === 'GET' && $path === '/api/public/site') { handle_public_site($db); return; }
+    if ($method === 'GET' && $path === '/api/public/service-tree') { handle_public_service_tree($db); return; }
+    if ($method === 'GET' && $path === '/api/public/service-display-tree') { handle_public_service_display_tree($db); return; }
+    if ($method === 'GET' && $path === '/api/public/service-availability') { handle_public_service_availability($db); return; }
+    if ($method === 'GET' && ($params = route_match($path, '/api/public/service-tree/(?P<id>[^/]+)'))) { handle_public_service_node($db, $params['id']); return; }
+    if ($method === 'GET' && ($params = route_match($path, '/api/public/services/(?P<slug>[^/]+)'))) { handle_public_service_by_slug($db, $params['slug']); return; }
+    if ($method === 'GET' && ($params = route_match($path, '/api/public/(?P<resource>categories|services|influencers|testimonials|portfolio|faqs|homepage)'))) { cms_list_public($db, $params['resource']); return; }
 
     if ($method === 'POST' && $path === '/api/payments/razorpay-webhook') {
         handle_razorpay_webhook($db);
@@ -98,6 +114,9 @@ try {
         handle_request_service($db);
         return;
     }
+    if ($method === 'POST' && $path === '/api/services/dynamic-request') { handle_create_dynamic_service_request($db); return; }
+    if ($method === 'GET' && ($params = route_match($path, '/api/public/influencers/(?P<id>[^/]+)/requirements'))) { handle_public_influencer_requirements($db, $params['id']); return; }
+    if ($method === 'POST' && ($params = route_match($path, '/api/influencers/(?P<id>[^/]+)/book'))) { handle_create_influencer_booking($db, $params['id']); return; }
 
     if ($method === 'GET' && $path === '/api/documents') {
         handle_get_user_documents($db);
@@ -168,6 +187,28 @@ try {
         handle_admin_overview($db);
         return;
     }
+
+    if (($method === 'GET' || $method === 'PUT') && $path === '/api/admin/settings') { handle_admin_settings($db); return; }
+    if ($method === 'GET' && ($params = route_match($path, '/api/admin/influencers/(?P<id>[^/]+)/requirements'))) { handle_admin_influencer_requirements($db, $params['id']); return; }
+    if ($method === 'GET' && $path === '/api/admin/influencer-booking-summary') { handle_admin_influencer_booking_summary($db); return; }
+    if ($method === 'GET' && ($params = route_match($path, '/api/admin/influencers/(?P<id>[^/]+)/bookings'))) { handle_admin_influencer_bookings($db, $params['id']); return; }
+    if ($method === 'PATCH' && ($params = route_match($path, '/api/admin/influencer-bookings/(?P<id>[^/]+)'))) { handle_admin_influencer_booking_review($db, $params['id']); return; }
+    if ($method === 'POST' && ($params = route_match($path, '/api/admin/influencers/(?P<id>[^/]+)/requirements'))) { handle_admin_influencer_requirement_create($db, $params['id']); return; }
+    if ($method === 'DELETE' && ($params = route_match($path, '/api/admin/influencer-requirements/(?P<id>[^/]+)'))) { handle_admin_influencer_requirement_delete($db, $params['id']); return; }
+    if ($method === 'GET' && $path === '/api/admin/service-tree') { handle_admin_service_tree($db); return; }
+    if ($method === 'POST' && $path === '/api/admin/service-nodes') { handle_admin_service_node_create($db); return; }
+    if ($method === 'PATCH' && ($params = route_match($path, '/api/admin/service-nodes/(?P<id>[^/]+)'))) { handle_admin_service_node_update($db, $params['id']); return; }
+    if ($method === 'DELETE' && ($params = route_match($path, '/api/admin/service-nodes/(?P<id>[^/]+)'))) { handle_admin_service_node_delete($db, $params['id']); return; }
+    if ($method === 'POST' && ($params = route_match($path, '/api/admin/service-nodes/(?P<id>[^/]+)/requirements'))) { handle_admin_requirement_create($db, $params['id']); return; }
+    if ($method === 'PATCH' && ($params = route_match($path, '/api/admin/service-requirements/(?P<id>[^/]+)'))) { handle_admin_requirement_update($db, $params['id']); return; }
+    if ($method === 'DELETE' && ($params = route_match($path, '/api/admin/service-requirements/(?P<id>[^/]+)'))) { handle_admin_requirement_delete($db, $params['id']); return; }
+    if ($method === 'GET' && ($params = route_match($path, '/api/admin/content/(?P<resource>categories|services|influencers|testimonials|portfolio|faqs|homepage)'))) { handle_admin_cms_list($db, $params['resource']); return; }
+    if ($method === 'POST' && ($params = route_match($path, '/api/admin/content/(?P<resource>categories|services|influencers|testimonials|portfolio|faqs|homepage)'))) { handle_admin_cms_create($db, $params['resource']); return; }
+    // PHP only populates $_POST and $_FILES for multipart POST requests.  Keep
+    // this update route for CMS editors that upload an image together with data.
+    if ($method === 'POST' && ($params = route_match($path, '/api/admin/content/(?P<resource>categories|services|influencers|testimonials|portfolio|faqs|homepage)/(?P<id>[^/]+)'))) { handle_admin_cms_update($db, $params['resource'], $params['id']); return; }
+    if ($method === 'PATCH' && ($params = route_match($path, '/api/admin/content/(?P<resource>categories|services|influencers|testimonials|portfolio|faqs|homepage)/(?P<id>[^/]+)'))) { handle_admin_cms_update($db, $params['resource'], $params['id']); return; }
+    if ($method === 'DELETE' && ($params = route_match($path, '/api/admin/content/(?P<resource>categories|services|influencers|testimonials|portfolio|faqs|homepage)/(?P<id>[^/]+)'))) { handle_admin_cms_delete($db, $params['resource'], $params['id']); return; }
 
     if ($method === 'GET' && $path === '/api/admin/messages') {
         handle_admin_messages($db);
